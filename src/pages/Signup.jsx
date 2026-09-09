@@ -3,12 +3,14 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { api } from '../services/api'
 
-export default function Login() {
+export default function Signup() {
   const navigate = useNavigate()
   const { setToken } = useAuthStore()
   const [formData, setFormData] = useState({
+    name: '',
     phone: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,11 +30,20 @@ export default function Login() {
     setError('')
 
     try {
-      if (!formData.phone || !formData.password) {
-        throw new Error('Please fill in all fields')
+      if (!formData.name || !formData.phone || !formData.password || !formData.confirmPassword) {
+        throw new Error('Please fill all fields')
       }
 
-      const response = await api.post('/auth/login', {
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match')
+      }
+
+      if (formData.password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+
+      const response = await api.post('/auth/signup', {
+        name: formData.name,
         phone: formData.phone,
         password: formData.password
       })
@@ -42,7 +53,7 @@ export default function Login() {
         navigate('/')
       }
     } catch (err) {
-      const message = err.response?.data?.error || err.message || 'Login failed'
+      const message = err.response?.data?.error || err.message || 'Signup failed'
       setError(message)
     } finally {
       setLoading(false)
@@ -58,9 +69,9 @@ export default function Login() {
           <p className="text-[#D8cfbc]/70">Premium Indian Spices</p>
         </div>
 
-        {/* Login Card */}
+        {/* Signup Card */}
         <div className="bg-white rounded-lg shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-[#2e0003] mb-6 text-center">Welcome Back</h2>
+          <h2 className="text-2xl font-bold text-[#2e0003] mb-6 text-center">Create Account</h2>
 
           {/* Error Message */}
           {error && (
@@ -69,9 +80,25 @@ export default function Login() {
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Phone Number */}
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e0003]"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Phone Number
@@ -82,6 +109,7 @@ export default function Login() {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit phone"
+                maxLength="10"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e0003]"
                 disabled={loading}
               />
@@ -97,19 +125,35 @@ export default function Login() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Your password"
+                placeholder="Min 6 characters"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e0003]"
                 disabled={loading}
               />
             </div>
 
-            {/* Login Button */}
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2e0003]"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Signup Button */}
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-[#2e0003] text-[#D8cfbc] py-2 rounded-lg font-semibold hover:bg-[#4a0a10] transition disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
 
@@ -134,11 +178,11 @@ export default function Login() {
             Continue with Google
           </button>
 
-          {/* Sign Up Link */}
+          {/* Login Link */}
           <p className="text-center text-gray-600 mt-6">
-            Don't have account?{' '}
-            <Link to="/signup" className="text-[#2e0003] font-semibold hover:underline">
-              Sign Up
+            Already have account?{' '}
+            <Link to="/login" className="text-[#2e0003] font-semibold hover:underline">
+              Sign In
             </Link>
           </p>
         </div>
