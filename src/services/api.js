@@ -3,15 +3,12 @@ import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
 })
 
-// Request interceptor
+// Request interceptor - add token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = useAuthStore.getState().token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -22,12 +19,11 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor
+// Response interceptor - handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
       useAuthStore.getState().logout()
       window.location.href = '/login'
     }
