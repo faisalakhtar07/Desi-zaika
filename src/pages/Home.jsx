@@ -12,10 +12,10 @@ export default function HomePage() {
 
   // Background images for slider
   const backgroundImages = [
-    'https://images.unsplash.com/photo-1596040936212-77a31c5fa033?w=1200&h=600&fit=crop', // Turmeric
-    'https://images.unsplash.com/photo-1596491916398-5eb8c20f2e26?w=1200&h=600&fit=crop', // Spices
-    'https://images.unsplash.com/photo-1596489516375-3f50dd08a621?w=1200&h=600&fit=crop', // Chili
-    'https://images.unsplash.com/photo-1596040936213-76a31c5fa033?w=1200&h=600&fit=crop', // Cumin
+    'https://ramadevifoods.com/cdn/shop/files/HomemadeTurmericPowder.jpg?v=1717471732', // Turmeric
+    'https://m.media-amazon.com/images/I/816lPXbgdXL.jpg', // Spices
+    'https://images.ctfassets.net/3s5io6mnxfqz/3pLESMFjNopcam5J5qGcoT/0427544b060a8fd29e3c0b68281d56cf/AdobeStock_191057762.jpeg', // Chili
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7Xxw3MG3stKuKog6QjrgwXe-6DUJS73tTPMY6i9GganYmwJCHv6xAX0mU&s=10', // Cumin
   ]
 
   // Auto rotate images every 5 seconds
