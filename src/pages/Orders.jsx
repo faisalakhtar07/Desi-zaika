@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Package, Truck, CheckCircle } from 'lucide-react'
 import api from '../services/api'
 
-function Orders() {
+export default function Orders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -12,80 +13,71 @@ function Orders() {
   const fetchOrders = async () => {
     try {
       const response = await api.get('/orders')
-      setOrders(response.data.orders || [])
-    } catch (error) {
-      console.log('Error fetching orders:', error)
+      setOrders(response.orders || [])
+    } catch (err) {
+      console.error('Failed to fetch orders:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const getStatusColor = (status) => {
+  const getStatusIcon = (status) => {
     switch (status) {
-      case 'Pending': return 'bg-yellow-100 text-yellow-800'
-      case 'Confirmed': return 'bg-blue-100 text-blue-800'
-      case 'Shipped': return 'bg-purple-100 text-purple-800'
-      case 'Delivered': return 'bg-green-100 text-green-800'
-      case 'Cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'pending':
+        return <Package className="text-yellow-500" />
+      case 'shipped':
+        return <Truck className="text-blue-500" />
+      case 'delivered':
+        return <CheckCircle className="text-green-500" />
+      default:
+        return <Package />
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f0ebe0] flex items-center justify-center">
+        <p>Loading orders...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">📦 My Orders</h1>
+    <div className="min-h-screen bg-[#f0ebe0] py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <h1 className="text-4xl font-bold text-[#2e0003] mb-8">My Orders</h1>
 
-      {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading orders...</p>
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-600 mb-4">You haven't placed any orders yet</p>
-          <a href="/" className="text-burgundy-900 font-semibold hover:underline">
-            Continue Shopping →
-          </a>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map(order => (
-            <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                <div>
-                  <h3 className="font-bold text-gray-900">Order #{order.orderNumber}</h3>
-                  <p className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</p>
+        {orders.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center">
+            <p className="text-gray-600 mb-4">No orders yet</p>
+            <p className="text-gray-500">Start shopping to create your first order!</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {orders.map(order => (
+              <div key={order._id} className="bg-white rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-[#2e0003]">Order #{order._id?.slice(-6)}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(order.status)}
+                    <span className="font-semibold capitalize">{order.status}</span>
+                  </div>
                 </div>
 
-                <div className="flex gap-4 mt-2 md:mt-0">
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.orderStatus)}`}>
-                    {order.orderStatus}
-                  </span>
-                  <span className="font-bold text-green-600">₹{order.totalAmount}</span>
+                <div className="border-t border-gray-200 pt-4">
+                  <p className="text-gray-600 mb-2">Items: {order.items?.length || 0}</p>
+                  <p className="font-bold text-[#2e0003]">₹{order.total}</p>
                 </div>
               </div>
-
-              <div className="border-t pt-4">
-                <p className="font-semibold text-gray-900 mb-2">Items:</p>
-                <ul className="space-y-1">
-                  {order.items?.map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-600">
-                      {item.name} x{item.quantity} = ₹{item.price * item.quantity}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="border-t mt-4 pt-4">
-                <p className="text-sm text-gray-600">
-                  📍 Delivery to: {order.shippingAddress?.city}, {order.shippingAddress?.state}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
-
-export default Orders
