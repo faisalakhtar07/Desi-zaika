@@ -5,14 +5,7 @@ import { LogOut } from 'lucide-react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 
-export default function Home() {
-  return (
-    <>
-      <Navbar />
-      {/* Rest of your home page code */}
-    </>
-  )
-}
+
 export default function Profile() {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()

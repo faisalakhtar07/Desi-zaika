@@ -3,14 +3,7 @@ import { Package, Truck, CheckCircle } from 'lucide-react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 
-export default function Home() {
-  return (
-    <>
-      <Navbar />
-      {/* Rest of your home page code */}
-    </>
-  )
-}
+
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
