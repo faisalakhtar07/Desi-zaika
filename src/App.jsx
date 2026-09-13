@@ -14,19 +14,19 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* PUBLIC ROUTES - सब को accessible */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={!token ? <Login /> : <Navigate to="/" />} />
         <Route path="/signup" element={!token ? <Signup /> : <Navigate to="/" />} />
 
-        {/* Protected Routes */}
-        <Route path="/" element={token ? <Home /> : <Navigate to="/login" />} />
+        {/* PROTECTED ROUTES - सिर्फ logged-in users */}
         <Route path="/cart" element={token ? <Cart /> : <Navigate to="/login" />} />
         <Route path="/checkout" element={token ? <Checkout /> : <Navigate to="/login" />} />
         <Route path="/orders" element={token ? <Orders /> : <Navigate to="/login" />} />
         <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
 
         {/* Catch all */}
-        <Route path="*" element={<Navigate to={token ? "/" : "/login"} />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   )

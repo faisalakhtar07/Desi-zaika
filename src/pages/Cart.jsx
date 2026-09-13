@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Trash2, Plus, Minus } from 'lucide-react'
+import Navbar from '../components/Navbar'
 
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+      {/* Rest of your home page code */}
+    </>
+  )
+}
 export default function Cart() {
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([

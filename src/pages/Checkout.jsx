@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import Navbar from '../components/Navbar'
 
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+      {/* Rest of your home page code */}
+    </>
+  )
+}
 export default function Checkout() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)

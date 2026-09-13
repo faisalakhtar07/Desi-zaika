@@ -3,7 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { Eye, EyeOff } from 'lucide-react'
+import Navbar from '../components/Navbar'
 
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+      {/* Rest of your home page code */}
+    </>
+  )
+}
 export default function Signup() {
   const navigate = useNavigate()
   const { setToken, setUser } = useAuthStore()

@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { ChevronLeft, ChevronRight, Menu, X, Home, ShoppingCart, User, LogOut } from 'lucide-react'
+import Navbar from '../components/Navbar'
+
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+      {/* Rest of your home page code */}
+    </>
+  )
+}
 
 export default function HomePage() {
   const navigate = useNavigate()
