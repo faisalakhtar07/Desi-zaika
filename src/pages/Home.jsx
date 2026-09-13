@@ -11,9 +11,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   const slides = [
-    { image: 'https://images.unsplash.com/photo-1596040680447-9e8e13e7a0e2?w=800', title: 'Premium Spices' },
-    { image: 'https://images.unsplash.com/photo-1582707947697-d97fb110d04d?w=800', title: 'Authentic Blend' },
-    { image: 'https://images.unsplash.com/photo-1596040680447-9e8e13e7a0e2?w=800', title: 'Fresh Quality' },
+    { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnF7jt80klhXoMLmarIa-KwIurGtI4K8zSVeGzVNA3qQ&s=10', title: 'Premium Spices' },
+    { image: 'https://artospices.com/wp-content/uploads/2025/08/pexels-photo-2802527-2802527-scaled.jpg', title: 'Authentic Blend' },
+    { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqRjnSC-qXzvlK3Iy1yfWFJ5jFGS3VrEPOxa3V5S4_2SRzRP83PNLC-_m5&s=10', title: 'Fresh Quality' },
+    { image: 'https://snnfoods.com/cdn/shop/articles/snn-blog-1-image-151086.jpg?v=1710844801', title: 'Fresh Quality' },
   ]
 
   useEffect(() => {
