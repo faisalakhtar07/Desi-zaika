@@ -26,3 +26,9 @@
     "autoprefixer": "^10.4.16"
   }
 }
+
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
