@@ -23,7 +23,6 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    // Check if user is logged in
     const user = localStorage.getItem('user')
     if (user) setIsAuthenticated(true)
   }, [])
@@ -31,7 +30,6 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes - Customer */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -44,26 +42,10 @@ export default function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/refund" element={<Refund />} />
         <Route path="/wishlist" element={<Wishlist />} />
-
-        {/* Protected Routes - Customer */}
-        <Route 
-          path="/cart" 
-          element={isAuthenticated ? <CartManager /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/checkout" 
-          element={isAuthenticated ? <Checkout /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/orders" 
-          element={isAuthenticated ? <Orders /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/profile" 
-          element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
-        />
-
-        {/* 404 */}
+        <Route path="/cart" element={isAuthenticated ? <CartManager /> : <Navigate to="/login" />} />
+        <Route path="/checkout" element={isAuthenticated ? <Checkout /> : <Navigate to="/login" />} />
+        <Route path="/orders" element={isAuthenticated ? <Orders /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
