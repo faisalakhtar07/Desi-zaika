@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
-// Pages
+// Pages - CUSTOMER ONLY
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -19,26 +19,13 @@ import Privacy from './pages/Privacy'
 import Refund from './pages/Refund'
 import Wishlist from './pages/Wishlist'
 
-// Admin Pages
-import AdminLogin from './pages/AdminLogin'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminProducts from './pages/AdminProducts'
-import AdminOrders from './pages/AdminOrders'
-import AdminCustomers from './pages/AdminCustomers'
-import AdminDeliveries from './pages/AdminDeliveries'
-
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
 
   useEffect(() => {
     // Check if user is logged in
     const user = localStorage.getItem('user')
     if (user) setIsAuthenticated(true)
-
-    // Check if admin is logged in
-    const admin = localStorage.getItem('adminToken')
-    if (admin) setIsAdminAuthenticated(true)
   }, [])
 
   return (
@@ -74,29 +61,6 @@ export default function App() {
         <Route 
           path="/profile" 
           element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
-        />
-
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route 
-          path="/admin/dashboard" 
-          element={isAdminAuthenticated ? <AdminDashboard /> : <Navigate to="/admin/login" />} 
-        />
-        <Route 
-          path="/admin/products" 
-          element={isAdminAuthenticated ? <AdminProducts /> : <Navigate to="/admin/login" />} 
-        />
-        <Route 
-          path="/admin/orders" 
-          element={isAdminAuthenticated ? <AdminOrders /> : <Navigate to="/admin/login" />} 
-        />
-        <Route 
-          path="/admin/customers" 
-          element={isAdminAuthenticated ? <AdminCustomers /> : <Navigate to="/admin/login" />} 
-        />
-        <Route 
-          path="/admin/deliveries" 
-          element={isAdminAuthenticated ? <AdminDeliveries /> : <Navigate to="/admin/login" />} 
         />
 
         {/* 404 */}
