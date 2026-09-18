@@ -20,7 +20,9 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 import TestimonialCarousel from "../components/TestimonialCarousel";
-import api from "../services/api";
+
+
+const API_URL = 'https://desi-zaika-backend.onrender.com/api/products'
 
 const heroImages = [
   "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=2000&q=85",
@@ -51,6 +53,7 @@ const categories = [
       "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=900&q=80",
   },
 ];
+
 
 const whyChoose = [
   {
@@ -173,14 +176,14 @@ export default function Home() {
       try {
         setLoadingProducts(true);
 
-        const response = await api.get("/products?limit=8");
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-        setProducts(
-          response?.data?.products ||
-            response?.data?.data ||
-            response?.data ||
-            []
-        );
+        const data = await response.json();
+        setProducts(data);
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
