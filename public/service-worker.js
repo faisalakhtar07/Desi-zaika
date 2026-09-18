@@ -1,76 +1,94 @@
+// Push notification listener
+self.addEventListener('push', (event) => {
+  if (!event.data) {
+    console.log('Push notification without data')
+    return
+  }
+
+  try {
+    const data = event.data.json()
+    
+    const options = {
+      body: data.body || 'New notification',
+      icon: '/logo-192-custom.svg',
+      badge: '/favicon-custom.svg',
+      tag: 'notification-' + Date.now(),
+      requireInteraction: true,
+      actions: [
+        { action: 'open', title: 'Open' },
+        { action: 'close', title: 'Close' }
+      ],
+      data: {
+        url: data.url || '/',
+        type: data.type || 'general'
+      }
+    }
+
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'Desi Zaika', options)
+    )
+  } catch (e) {
+    console.error('Error in push handler:', e)
+  }
+})
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+
+  if (event.action === 'close') {
+    return
+  }
+
+  const urlToOpen = event.notification.data.url || '/'
+
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then((windowClients) => {
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i]
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus()
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen)
+      }
+    })
+  )
+})
+
+// Notification close handler
+self.addEventListener('notificationclose', (event) => {
+  console.log('Notification closed:', event.notification.tag)
+})
+
+// Cache strategy for offline
 const CACHE_NAME = 'desi-zaika-v1'
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/favicon-custom.svg',
+  '/logo-192-custom.svg'
 ]
 
-// Install event
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('Opened cache')
-      return cache.addAll(urlsToCache).catch(err => {
-        console.log('Cache addAll error:', err)
-      })
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
   )
-  self.skipWaiting()
 })
 
-// Activate event
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName)
-          }
-        })
-      )
-    })
-  )
-  self.clients.claim()
-})
-
-// Fetch event - Network first, fallback to cache
-self.addEventListener('fetch', event => {
-  const { request } = event
-  
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') {
     return
   }
 
-  // Skip API calls - let them go to network
-  if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request).catch(() => {
-        return caches.match(request)
-      })
-    )
-    return
-  }
-
-  // For everything else, use cache first
   event.respondWith(
-    caches.match(request).then(response => {
-      if (response) {
-        return response
-      }
-      return fetch(request).then(response => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response
-        }
-        const responseToCache = response.clone()
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, responseToCache)
-        })
-        return response
-      }).catch(() => {
-        return caches.match('/index.html')
-      })
-    })
+    caches.match(event.request)
+      .then((response) => response || fetch(event.request))
+      .catch(() => caches.match('/index.html'))
   )
 })
