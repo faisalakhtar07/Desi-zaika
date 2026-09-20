@@ -1,6 +1,4 @@
-from pathlib import Path
-
-code = r"""import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, ShoppingCart, ArrowRight } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import api from '../services/api'
@@ -202,4 +200,111 @@ export default function Home() {
                 >
                   <div className="relative h-52 overflow-hidden bg-[#eee7da]">
                     <img
-                      src={
+                      src={product.image || 'https://via.placeholder.com/500'}
+                      alt={product.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+
+                  <div className="p-5">
+                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#9a6b6f]">
+                      {product.category || 'Spices'}
+                    </p>
+                    <h3 className="truncate text-base font-semibold text-[#2e0003]">
+                      {product.name}
+                    </h3>
+
+                    {product.description && (
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-gray-500">
+                        {product.description}
+                      </p>
+                    )}
+
+                    <div className="mt-5 flex items-center justify-between">
+                      <span className="text-lg font-bold text-[#2e0003]">
+                        ₹{product.price}
+                      </span>
+
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        aria-label={`Add ${product.name} to cart`}
+                        className="rounded-full bg-[#2e0003] p-2.5 text-[#f5f0e7] transition hover:bg-[#4a0a10]"
+                      >
+                        <ShoppingCart size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Why Desi Zaika - Background Image Cards */}
+        <section className="bg-[#2e0003] py-16 text-white md:py-24">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <div className="mb-10 max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#d8cfbc]">
+                WHY DESI ZAIKA
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
+                More than just spices.
+              </h2>
+              <p className="mt-4 text-sm leading-6 text-white/65">
+                Simple ingredients, thoughtful sourcing and the flavour of
+                Indian kitchens in every pack.
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
+              {whyCards.map((card) => (
+                <div
+                  key={card.title}
+                  className="group relative min-h-[360px] overflow-hidden rounded-2xl"
+                >
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+
+                  <div className="relative flex h-full flex-col justify-end p-6">
+                    <h3 className="text-xl font-semibold">{card.title}</h3>
+                    <p className="mt-2 max-w-sm text-sm leading-6 text-white/80">
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Minimal CTA */}
+        <section className="px-6 py-16 md:px-10 md:py-24">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-[#d8cfbc] px-7 py-12 text-center sm:px-12">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#6e3035]">
+              DESI ZAIKA
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold text-[#2e0003] sm:text-4xl">
+              Bring the real taste home.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#5f5150]">
+              Explore our collection and make your everyday meals a little
+              more special.
+            </p>
+            <button
+              onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#2e0003] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#4a0a10]"
+            >
+              Shop Now
+              <ArrowRight size={17} />
+            </button>
+          </div>
+        </section>
+      </main>
+    </>
+  )
+}
