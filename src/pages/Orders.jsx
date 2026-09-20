@@ -1,27 +1,30 @@
-import Navbar from '../components/Navbar'
-
 export default function Orders() {
-  const orders = []
+  const orders = JSON.parse(localStorage.getItem('orders') || '[]')
 
-  return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-[#f0ebe0] p-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#2e0003] mb-8">My Orders</h1>
-
-          {orders.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 text-center">
-              <p className="text-gray-600 text-lg">No orders yet</p>
-              <p className="text-gray-500 text-sm mt-2">Your orders will appear here</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Orders will be listed here */}
-            </div>
-          )}
+  if (orders.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#f0ebe0] py-12 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl text-[#2e0003] mb-4">No orders yet</p>
+          <p className="text-gray-600">Start shopping to place your first order!</p>
         </div>
       </div>
-    </>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f0ebe0] py-12">
+      <div className="max-w-6xl mx-auto px-6">
+        <h1 className="text-4xl font-bold text-[#2e0003] mb-8">My Orders</h1>
+        <div className="space-y-4">
+          {orders.map((order, idx) => (
+            <div key={idx} className="bg-white rounded-lg p-4">
+              <p className="font-semibold">Order #{idx + 1}</p>
+              <p className="text-gray-600">Status: Pending</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }

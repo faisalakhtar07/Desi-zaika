@@ -1,136 +1,61 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import { useAuthStore } from '../store/authStore'
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    phone: user?.phone || '',
-    address: '',
-    city: '',
-    pincode: '',
-    paymentMethod: 'cod'
-  })
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      // Simulate order placement
-      alert('Order placed successfully!')
-      navigate('/orders')
-    } catch (err) {
-      alert('Order failed. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  const handleCheckout = () => {
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]')
+    orders.push({
+      id: Date.now(),
+      items: cart,
+      total: total,
+      date: new Date().toLocaleDateString()
+    })
+    localStorage.setItem('orders', JSON.stringify(orders))
+    localStorage.setItem('cart', JSON.stringify([]))
+    alert('✅ Order placed successfully!')
+    navigate('/orders')
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-[#f0ebe0] p-4">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#2e0003] mb-8">Checkout</h1>
+    <div className="min-h-screen bg-[#f0ebe0] py-12">
+      <div className="max-w-6xl mx-auto px-6">
+        <h1 className="text-4xl font-bold text-[#2e0003] mb-8">Checkout</h1>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-2xl p-8">
+            <h3 className="text-xl font-bold mb-4">Delivery Address</h3>
+            <p className="mb-2"><span className="font-semibold">Name:</span> {user.name}</p>
+            <p><span className="font-semibold">Phone:</span> {user.mobile}</p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 space-y-4">
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
-              />
+          <div className="bg-white rounded-2xl p-8">
+            <h3 className="text-xl font-bold mb-4">Order Summary</h3>
+            <div className="space-y-2 mb-4">
+              {cart.map((item) => (
+                <div key={item._id} className="flex justify-between">
+                  <p>{item.name} × {item.quantity}</p>
+                  <p>₹{item.price * item.quantity}</p>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">Phone</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                placeholder="Street address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-semibold text-gray-700 mb-2">City</label>
-                <input
-                  type="text"
-                  name="city"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
-                />
+            <div className="border-t pt-4">
+              <div className="flex justify-between text-lg font-bold mb-6">
+                <p>Total:</p>
+                <p className="text-[#2e0003]">₹{total}</p>
               </div>
-              <div>
-                <label className="block font-semibold text-gray-700 mb-2">Pincode</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  placeholder="6 digit pincode"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">Payment Method</label>
-              <select
-                name="paymentMethod"
-                value={formData.paymentMethod}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2e0003]"
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-[#2e0003] text-white py-3 rounded-lg hover:bg-[#4a0a10] font-semibold"
               >
-                <option value="cod">Cash on Delivery</option>
-                <option value="card">Credit/Debit Card</option>
-                <option value="upi">UPI</option>
-              </select>
+                Place Order
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#2e0003] text-[#D8cfbc] font-bold py-3 rounded-lg hover:bg-[#4a0a10] disabled:opacity-50"
-            >
-              {loading ? 'Processing...' : 'Place Order'}
-            </button>
-          </form>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
