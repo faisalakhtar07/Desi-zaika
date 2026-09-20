@@ -22,17 +22,6 @@ import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Refund from './pages/Refund'
 
-
-
-export default function App() {
-  return (
-    <Router>
-      <NotificationHandler /> 
-      {/* rest of routes */}
-    </Router>
-  )
-}
-
 // Protected Route Component
 function ProtectedRoute({ children }) {
   const user = localStorage.getItem('user')
@@ -43,18 +32,15 @@ export default function App() {
   useEffect(() => {
     const user = localStorage.getItem('user')
     if (user) {
-      console.log('User logged in:', JSON.parse(user).name)
+      console.log('✅ User logged in:', JSON.parse(user).name)
     }
   }, [])
 
   return (
     <Router>
       <NotificationHandler />
-      
-      {/* Navbar */}
       <Navbar />
 
-      {/* Pages */}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -71,42 +57,59 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
 
         {/* Protected Routes */}
-        <Route path="/cart" element={
-          <ProtectedRoute>
-            <Cart />
-          </ProtectedRoute>
-        } />
-        <Route path="/checkout" element={
-          <ProtectedRoute>
-            <Checkout />
-          </ProtectedRoute>
-        } />
-        <Route path="/orders" element={
-          <ProtectedRoute>
-            <Orders />
-          </ProtectedRoute>
-        } />
-        <Route path="/orders/:orderId" element={
-          <ProtectedRoute>
-            <OrderDetail />
-          </ProtectedRoute>
-        } />
-        <Route path="/wishlist" element={
-          <ProtectedRoute>
-            <Wishlist />
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
 
-      {/* Footer */}
       <Footer />
     </Router>
   )
