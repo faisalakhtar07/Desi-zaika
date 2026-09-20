@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Search, Filter, ChevronDown } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import { Search } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 
 export default function Products() {
@@ -23,10 +21,22 @@ export default function Products() {
       try {
         const res = await fetch('https://desi-zaika-backend.onrender.com/api/products')
         const data = await res.json()
-        setProducts(data)
+        
+        // Handle different response formats
+        let productList = []
+        if (Array.isArray(data)) {
+          productList = data
+        } else if (data.data && Array.isArray(data.data)) {
+          productList = data.data
+        } else if (data.products && Array.isArray(data.products)) {
+          productList = data.products
+        }
+
+        setProducts(productList)
         setLoading(false)
       } catch (err) {
         console.error('Error:', err)
+        setProducts([])
         setLoading(false)
       }
     }
@@ -35,13 +45,18 @@ export default function Products() {
 
   // Filter & Sort
   useEffect(() => {
-    let result = products
+    if (!Array.isArray(products)) {
+      setFiltered([])
+      return
+    }
+
+    let result = [...products]
 
     // Search
     if (searchTerm) {
       result = result.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchTerm.toLowerCase())
+        (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
 
@@ -52,11 +67,11 @@ export default function Products() {
 
     // Sort
     if (sortBy === 'price-low') {
-      result.sort((a, b) => a.price - b.price)
+      result.sort((a, b) => (a.price || 0) - (b.price || 0))
     } else if (sortBy === 'price-high') {
-      result.sort((a, b) => b.price - a.price)
+      result.sort((a, b) => (b.price || 0) - (a.price || 0))
     } else if (sortBy === 'latest') {
-      result.reverse()
+      result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     }
 
     setFiltered(result)
@@ -75,8 +90,6 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-[#f0ebe0]">
-      <Navbar />
-
       {/* Search & Filter Bar */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -145,8 +158,6 @@ export default function Products() {
           </div>
         )}
       </div>
-
-      <Footer />
     </div>
   )
 }
