@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ShoppingCart, ArrowRight } from 'lucide-react'
 import Navbar from '../components/Navbar'
-import api from '../services/api'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ export default function Home() {
 
   const slides = [
     {
-      image: 'https://images.unsplash.com/photo-1596040680447-9e8e13e7a0e2?w=1600&q=85',
+      image: 'https://images.unsplash.com/photo-1596040447447-9e8e13e7a0e2?w=1600&q=85',
       title: 'Authentic Indian Spices',
       subtitle: 'Pure taste. Rich aroma. Desi Zaika.'
     },
@@ -57,8 +57,19 @@ export default function Home() {
 
   const fetchProducts = async () => {
     try {
-      const response = await api.get('/products')
-      setProducts(response.data?.products || response.data || [])
+      const response = await fetch('https://desi-zaika-backend.onrender.com/api/products')
+      const data = await response.json()
+      
+      let productList = []
+      if (Array.isArray(data)) {
+        productList = data
+      } else if (data.products && Array.isArray(data.products)) {
+        productList = data.products
+      } else if (data.data && Array.isArray(data.data)) {
+        productList = data.data
+      }
+      
+      setProducts(productList)
     } catch (err) {
       console.error('Failed to fetch products:', err)
       setProducts([])
