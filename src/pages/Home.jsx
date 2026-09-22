@@ -1,49 +1,90 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingCart, UserRound, Menu, X, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingCart, Sparkles, X } from 'lucide-react'
 
 const API_URL = 'https://desi-zaika-backend.onrender.com/api/products'
-const LOGO_CANDIDATES = ['/logo.png', '/desi-zaika-logo.png', '/logo.svg']
-const VIDEO_CANDIDATES = ['/hero.mp4', '/desi-zaika.mp4', '/video.mp4']
+const LOGO = '/logo.png'
+const HERO_VIDEO = '/hero.mp4'
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1400&q=85'
 
-const CATEGORY_META = {
-  Spices: { title: 'Spices', text: 'Whole spices, powders and everyday masala essentials.' },
-  Tea: { title: 'Tea', text: 'Tea leaves and comforting blends for your daily cup.' },
-  Rice: { title: 'Rice', text: 'Everyday rice varieties for simple meals and special occasions.' },
-  Herbs: { title: 'Herbs', text: 'Aromatic herbs to finish and lift your recipes.' },
-  Oils: { title: 'Oils', text: 'Kitchen oils selected for everyday cooking.' },
-  Grains: { title: 'Grains', text: 'Wholesome grains for your everyday pantry.' },
-}
+const HERO_POSTER = 'https://images.unsplash.com/photo-1596040447447-9e8e13e7a0e2?auto=format&fit=crop&w=2200&q=90'
 
-const STORY = [
-  ['01', 'The heart of Indian cooking', 'Spices bring colour, aroma and personality to everyday food. Desi Zaika is built around that simple idea — good food starts with good flavour.'],
-  ['02', 'Selected for everyday meals', 'From a quick dal to a weekend biryani, the right ingredient can change the entire experience. Explore the collection by category and find what belongs in your kitchen.'],
-  ['03', 'Aroma you notice', 'The experience starts before the first bite. Rich aroma, familiar ingredients and an easy shopping experience come together in one place.'],
-  ['04', 'From simple food to special moments', 'A family dinner, a festival, a Sunday lunch or a simple cup of tea — a little Desi Zaika can make ordinary moments feel special.'],
+const CATEGORIES = [
+  { name: 'Spices', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=700&q=85' },
+  { name: 'Tea', image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=700&q=85' },
+  { name: 'Rice', image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=700&q=85' },
+  { name: 'Herbs', image: 'https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=700&q=85' },
+  { name: 'Oils', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=700&q=85' },
+  { name: 'Grains', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=700&q=85' },
 ]
 
-function Logo({ className = 'h-10 w-auto' }) {
-  const [index, setIndex] = useState(0)
-  return (
-    <img
-      src={LOGO_CANDIDATES[index]}
-      alt="Desi Zaika"
-      className={className}
-      onError={() => setIndex((i) => (i + 1) % LOGO_CANDIDATES.length)}
-    />
-  )
+const SPOTLIGHT = [
+  {
+    no: '01', title: 'Pure & Authentic',
+    text: 'Carefully selected spices with natural colour, aroma and the familiar taste of an Indian kitchen.',
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=90',
+  },
+  {
+    no: '02', title: 'Farm to Kitchen',
+    text: 'A flavour journey that begins with quality ingredients and ends in the meals you make at home.',
+    image: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=90',
+  },
+  {
+    no: '03', title: 'Made for Every Kitchen',
+    text: 'Everyday essentials designed to make home cooking simple, flavourful and enjoyable.',
+    image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=1200&q=90',
+  },
+  {
+    no: '04', title: 'Health & Purity',
+    text: 'A thoughtful collection for people who care about ingredients, flavour and what reaches their kitchen.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=90',
+  },
+]
+
+const STORY = [
+  { no: '01', title: 'From Nature', text: 'Every flavour begins with an ingredient. We celebrate the natural colours, textures and aromas that make Indian food special.', image: 'https://images.unsplash.com/photo-1515586000433-45406d8e6662?auto=format&fit=crop&w=1100&q=90' },
+  { no: '02', title: 'With Care', text: 'From whole spices to aromatic blends, every ingredient deserves care so its character can reach your kitchen.', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1100&q=90' },
+  { no: '03', title: 'To Your Kitchen', text: 'The final destination is simple: your kitchen, your recipes and the people around your table.', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=90' },
+  { no: '04', title: 'For a Better You', text: 'Better ingredients help you make food you feel good about sharing every day.', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=90' },
+]
+
+function Image({ src, alt, className = '', ...props }) {
+  const [failed, setFailed] = useState(false)
+  return <img {...props} src={failed ? FALLBACK_IMAGE : src} alt={alt} onError={() => setFailed(true)} className={className} />
 }
 
-function ProductImage({ product, className = '' }) {
+function Logo({ className = 'h-10 w-auto', dark = false }) {
   const [failed, setFailed] = useState(false)
-  const src = !failed && product?.image ? product.image : LOGO_CANDIDATES[0]
+  if (failed) return <div className={`${className} flex items-center font-serif text-xl font-semibold ${dark ? 'text-white' : 'text-[#2d0506]'}`}>Desi Zaika</div>
+  return <img src={LOGO} alt="Desi Zaika" onError={() => setFailed(true)} className={`${className} object-contain`} />
+}
+
+function money(value) {
+  return `₹${Number(value || 0).toLocaleString('en-IN')}`
+}
+
+function ProductCard({ product, onCart, onWishlist, wished, navigate }) {
+  const stock = Number(product.stock ?? 0)
+  const discount = product.discount ? Number(product.discount) : (Number(product.originalPrice) > Number(product.price) ? Math.round((1 - Number(product.price) / Number(product.originalPrice)) * 100) : 0)
   return (
-    <img
-      src={src}
-      alt={product?.name || 'Desi Zaika'}
-      className={className}
-      onError={() => setFailed(true)}
-    />
+    <article className="group overflow-hidden rounded-2xl border border-[#e4d9c8] bg-[#fffdf8] shadow-[0_8px_30px_rgba(60,30,10,.05)]">
+      <div className="relative h-52 cursor-pointer overflow-hidden sm:h-60" onClick={() => navigate(`/product/${product._id}`)}>
+        <Image src={product.image || FALLBACK_IMAGE} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        {discount > 0 && <span className="absolute left-3 top-3 rounded-full bg-[#7e1720] px-3 py-1 text-[10px] font-bold text-white">-{discount}%</span>}
+        <button onClick={(e) => { e.stopPropagation(); onWishlist(product) }} className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-[#5b1419] shadow-sm backdrop-blur" aria-label="Wishlist">
+          <Heart size={16} className={wished ? 'fill-current' : ''} />
+        </button>
+        {stock <= 0 && <div className="absolute inset-0 flex items-center justify-center bg-black/45"><span className="rounded-full bg-white px-4 py-2 text-xs font-bold">Out of Stock</span></div>}
+      </div>
+      <div className="p-4">
+        <p className="text-[9px] font-bold uppercase tracking-[.2em] text-[#8a6b59]">{product.category || 'Spices'}</p>
+        <h3 onClick={() => navigate(`/product/${product._id}`)} className="mt-1 cursor-pointer truncate font-semibold text-[#2e1715]">{product.name}</h3>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div><span className="font-bold text-[#2e1715]">{money(product.price)}</span>{Number(product.originalPrice) > Number(product.price) && <span className="ml-2 text-xs text-gray-400 line-through">{money(product.originalPrice)}</span>}</div>
+          <button disabled={stock <= 0} onClick={() => onCart(product)} className="rounded-full bg-[#7e1720] p-2.5 text-white transition hover:bg-[#5e1017] disabled:bg-gray-300"><ShoppingCart size={16} /></button>
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -51,145 +92,100 @@ export default function Home() {
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [spotlight, setSpotlight] = useState(0)
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('All')
-  const [sortBy, setSortBy] = useState('latest')
-  const [whyIndex, setWhyIndex] = useState(0)
-  const [wishlist, setWishlist] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wishlist') || '[]') } catch { return [] }
-  })
+  const [wishlist, setWishlist] = useState(() => { try { return JSON.parse(localStorage.getItem('wishlist') || '[]') } catch { return [] } })
+  const [menu, setMenu] = useState(false)
+  const videoRef = useRef(null)
 
   useEffect(() => {
-    fetch(API_URL)
-      .then((r) => r.json())
-      .then((data) => setProducts(Array.isArray(data) ? data : Array.isArray(data.products) ? data.products : Array.isArray(data.data) ? data.data : []))
-      .catch((e) => console.error('Failed to load products:', e))
-      .finally(() => setLoading(false))
+    fetch(API_URL).then(r => r.json()).then(data => {
+      const list = Array.isArray(data) ? data : (Array.isArray(data.products) ? data.products : (Array.isArray(data.data) ? data.data : []))
+      setProducts(list)
+    }).catch(console.error).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => { localStorage.setItem('wishlist', JSON.stringify(wishlist)) }, [wishlist])
-
-  const categories = useMemo(() => {
-    const found = [...new Set(products.map((p) => String(p.category || '').trim()).filter(Boolean))]
-    const preferred = Object.keys(CATEGORY_META).filter((name) => found.some((x) => x.toLowerCase() === name.toLowerCase()))
-    const other = found.filter((x) => !preferred.some((p) => p.toLowerCase() === x.toLowerCase()))
-    return ['All', ...preferred, ...other]
-  }, [products])
+  useEffect(() => {
+    const timer = setInterval(() => setSpotlight(v => (v + 1) % SPOTLIGHT.length), 4200)
+    return () => clearInterval(timer)
+  }, [])
 
   const filtered = useMemo(() => {
-    let result = [...products]
     const q = search.trim().toLowerCase()
-    if (q) result = result.filter((p) => [p.name, p.description, p.category].some((v) => String(v || '').toLowerCase().includes(q)))
-    if (category !== 'All') result = result.filter((p) => String(p.category || '').toLowerCase() === category.toLowerCase())
-    if (sortBy === 'price-low') result.sort((a, b) => Number(a.price || 0) - Number(b.price || 0))
-    else if (sortBy === 'price-high') result.sort((a, b) => Number(b.price || 0) - Number(a.price || 0))
-    else result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-    return result
-  }, [products, search, category, sortBy])
+    if (!q) return products
+    return products.filter(p => [p.name, p.category, p.description].some(v => String(v || '').toLowerCase().includes(q)))
+  }, [products, search])
 
-  const categoryProducts = (name) => products.filter((p) => String(p.category || '').toLowerCase() === name.toLowerCase()).slice(0, 4)
-  const whyProducts = products.filter((p) => p.image).slice(0, 6)
+  const categoryProducts = (name) => products.filter(p => String(p.category || '').toLowerCase().trim() === name.toLowerCase())
+  const bestSellers = filtered.slice(0, 5)
 
   const addToCart = (p) => {
-    if (Number(p.stock) === 0) return
+    if (Number(p.stock ?? 0) <= 0) return
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const existing = cart.find((i) => i._id === p._id)
-    if (existing) existing.quantity = Number(existing.quantity || 0) + 1
+    const item = cart.find(x => x._id === p._id)
+    if (item) item.quantity = Number(item.quantity || 0) + 1
     else cart.push({ ...p, quantity: 1 })
     localStorage.setItem('cart', JSON.stringify(cart))
     navigate('/cart')
   }
 
-  const toggleWishlist = (p) => setWishlist((current) => current.some((i) => i._id === p._id) ? current.filter((i) => i._id !== p._id) : [...current, p])
-  const discount = (p) => p.discount ? Number(p.discount) : Number(p.originalPrice) > Number(p.price) ? Math.round((1 - Number(p.price) / Number(p.originalPrice)) * 100) : 0
-  const goProducts = (cat = '') => navigate(cat ? `/products?category=${encodeURIComponent(cat)}` : '/products')
-
-  const nextWhy = () => setWhyIndex((i) => (i + 1) % Math.max(whyProducts.length, 1))
-  const prevWhy = () => setWhyIndex((i) => (i - 1 + Math.max(whyProducts.length, 1)) % Math.max(whyProducts.length, 1))
+  const toggleWishlist = (p) => setWishlist(list => list.some(x => x._id === p._id) ? list.filter(x => x._id !== p._id) : [...list, p])
+  const openCategory = (name) => navigate(`/products?category=${encodeURIComponent(name)}`)
 
   return (
-    <main className="min-h-screen bg-[#f6f1e8] text-[#2e0003]">
-      {/* HERO — local public video, no image slider */}
-      <section className="relative h-[78vh] min-h-[560px] overflow-hidden bg-[#190003]">
-        <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline poster="/logo.png">
-          {VIDEO_CANDIDATES.map((src) => <source key={src} src={src} type="video/mp4" />)}
-        </video>
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 md:px-10">
+    <main className="min-h-screen overflow-hidden bg-[#f7f1e7] text-[#2d1715]">
+      {/* NAVBAR */}
+      <header className="absolute left-0 right-0 top-0 z-50 text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10 md:py-6">
+          <Logo dark className="h-12 w-36 md:h-14 md:w-44" />
+          <nav className="hidden items-center gap-7 text-xs font-medium md:flex">
+            <a href="#home" className="hover:opacity-70">Home</a><button onClick={() => navigate('/products')} className="hover:opacity-70">Shop</button><a href="#categories" className="hover:opacity-70">Categories</a><a href="#story" className="hover:opacity-70">About</a><a href="#contact" className="hover:opacity-70">Contact</a>
+          </nav>
+          <div className="hidden items-center gap-4 md:flex"><button aria-label="Search" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}><Search size={18} /></button><button aria-label="Wishlist" onClick={() => navigate('/wishlist')}><Heart size={18} /></button><button aria-label="Cart" onClick={() => navigate('/cart')}><ShoppingCart size={18} /></button><button aria-label="Profile" onClick={() => navigate('/profile')}><UserRound size={18} /></button></div>
+          <button onClick={() => setMenu(v => !v)} className="rounded-full bg-white/10 p-2 backdrop-blur md:hidden" aria-label="Menu">{menu ? <X /> : <Menu />}</button>
+        </div>
+        {menu && <div className="mx-4 rounded-2xl border border-white/20 bg-[#2d0809]/95 p-5 shadow-xl backdrop-blur md:hidden"><div className="grid gap-4 text-sm"><a href="#home" onClick={() => setMenu(false)}>Home</a><button className="text-left" onClick={() => navigate('/products')}>Shop</button><a href="#categories" onClick={() => setMenu(false)}>Categories</a><a href="#story" onClick={() => setMenu(false)}>About</a><a href="#contact" onClick={() => setMenu(false)}>Contact</a></div></div>}
+      </header>
+
+      {/* HERO VIDEO */}
+      <section id="home" className="relative min-h-[650px] h-[92vh] overflow-hidden bg-[#180808]">
+        <video ref={videoRef} autoPlay muted loop playsInline poster={HERO_POSTER} className="absolute inset-0 h-full w-full object-cover" src={HERO_VIDEO} />
+        <div className="absolute inset-0 bg-black/45" /><div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/15" />
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 pt-20 md:px-10">
           <div className="max-w-2xl text-white">
-            <div className="mb-6"><Logo className="h-14 w-auto object-contain object-left brightness-0 invert sm:h-16" /></div>
-            <p className="mb-4 flex items-center gap-2 text-xs font-bold tracking-[.3em] text-white/75"><Sparkles size={14} /> PURE INDIAN FLAVOUR</p>
-            <h1 className="text-5xl font-semibold leading-[.96] tracking-tight sm:text-6xl md:text-8xl">Real taste,<br /><span className="text-[#eadcc6]">made simple.</span></h1>
-            <p className="mt-6 max-w-xl text-sm leading-7 text-white/80 sm:text-base">Explore spices, tea and everyday pantry essentials — organised by category so customers can reach the right product immediately.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#2e0003]">Shop Products <ArrowRight size={17} /></button>
-              <button onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })} className="rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold backdrop-blur">Browse Categories</button>
-            </div>
+            <p className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.35em] text-white/75"><Sparkles size={13} /> Desi Zaika</p>
+            <h1 className="font-serif text-5xl font-semibold leading-[.95] sm:text-6xl md:text-8xl">Authentic taste,<br /><span className="text-[#ead7bb]">made simple.</span></h1>
+            <p className="mt-6 max-w-xl text-sm leading-7 text-white/80 sm:text-base">Premium Indian spices made to bring warmth, aroma and real flavour to your everyday cooking.</p>
+            <button onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })} className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#8e1c27] px-6 py-3.5 text-sm font-semibold text-white shadow-lg">Shop Now <ArrowRight size={17} /></button>
           </div>
         </div>
-        <div className="absolute bottom-7 left-1/2 z-20 -translate-x-1/2 text-[10px] uppercase tracking-[.35em] text-white/60">Scroll to explore</div>
+        <div className="absolute bottom-7 left-6 right-6 z-10 flex items-end justify-between text-white md:left-10 md:right-10"><div className="text-xs text-white/70">↓ &nbsp; Scroll to explore</div><div className="flex items-center gap-4 text-xs"><span>01</span><span className="text-white/40">02</span><span className="text-white/40">03</span><span className="text-white/40">04</span><span className="ml-3">Ⅱ</span></div></div>
       </section>
 
-      {/* PRODUCTS FIRST — immediately after hero */}
-      <section id="products" className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-24">
-        <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-          <div><p className="text-xs font-bold uppercase tracking-[.3em] text-[#8b4b50]">Shop now</p><h2 className="mt-3 text-4xl font-semibold sm:text-5xl">Products first.</h2><p className="mt-3 max-w-xl text-sm leading-7 text-gray-600">Your latest products are shown directly below the hero. Use the category buttons to jump into the right collection.</p></div>
-          <button onClick={() => goProducts()} className="inline-flex w-fit items-center gap-2 text-sm font-semibold hover:underline">View all products <ArrowRight size={16} /></button>
-        </div>
-        <div className="rounded-2xl border border-[#e1d8c9] bg-white p-4 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row">
-            <div className="relative flex-1"><Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products..." className="w-full rounded-xl border border-[#ddd4c6] bg-[#faf8f4] py-3 pl-11 pr-10 text-sm outline-none focus:border-[#2e0003]" />{search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={17} /></button>}</div>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-xl border border-[#ddd4c6] bg-[#faf8f4] px-4 py-3 text-sm"><option value="latest">Latest</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select>
-          </div>
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">{categories.map((c) => <button key={c} onClick={() => setCategory(c)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition ${category === c ? 'bg-[#2e0003] text-white' : 'bg-[#f3eee6] text-[#5c4d4d] hover:bg-[#e8ddd0]'}`}>{c}</button>)}</div>
-        </div>
-        <div className="mt-8">
-          {loading ? <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[1, 2, 3, 4].map((i) => <div key={i} className="h-[330px] animate-pulse rounded-2xl bg-white" />)}</div> : filtered.length === 0 ? <div className="rounded-2xl bg-white px-6 py-16 text-center"><p className="font-semibold">No products found</p><button onClick={() => { setSearch(''); setCategory('All') }} className="mt-5 rounded-full bg-[#2e0003] px-5 py-2.5 text-sm font-semibold text-white">Clear Filters</button></div> : <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{filtered.slice(0, 8).map((p) => { const d = discount(p); const stock = Number(p.stock || 0); const wish = wishlist.some((i) => i._id === p._id); return <article key={p._id} className="group overflow-hidden rounded-2xl border border-[#e7ded1] bg-white transition hover:-translate-y-1 hover:shadow-lg"><div onClick={() => navigate(`/product/${p._id}`)} className="relative h-48 cursor-pointer overflow-hidden bg-[#eee7da] sm:h-56"><ProductImage product={p} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><button onClick={(e) => { e.stopPropagation(); toggleWishlist(p) }} className="absolute right-3 top-3 rounded-full bg-white/90 p-2"><Heart size={17} className={wish ? 'fill-[#8b111b] text-[#8b111b]' : 'text-[#3d3333]'} /></button>{d > 0 && <span className="absolute bottom-3 left-3 rounded-full bg-[#2e0003] px-2.5 py-1 text-[10px] font-bold text-white">{d}% OFF</span>}{stock === 0 && <div className="absolute inset-0 flex items-center justify-center bg-black/45"><span className="rounded-full bg-white px-4 py-2 text-xs font-bold">Out of Stock</span></div>}</div><div className="p-4"><p className="text-[10px] font-semibold uppercase tracking-wider text-[#9a6b6f]">{p.category || 'General'}</p><h3 onClick={() => navigate(`/product/${p._id}`)} className="mt-1 cursor-pointer truncate text-sm font-semibold sm:text-base">{p.name}</h3><p className="mt-2 line-clamp-2 text-xs leading-5 text-gray-500">{p.description || 'Authentic flavour for your everyday kitchen.'}</p><div className="mt-4 flex items-end justify-between"><div><span className="text-lg font-bold">₹{p.price}</span>{Number(p.originalPrice) > Number(p.price) && <span className="ml-2 text-xs text-gray-400 line-through">₹{p.originalPrice}</span>}</div><button onClick={() => addToCart(p)} disabled={stock === 0} className="rounded-full bg-[#2e0003] p-2.5 text-white disabled:bg-gray-300"><ShoppingCart size={17} /></button></div></div></article> })}</div>}
-        </div>
+      {/* PRODUCTS FIRST */}
+      <section id="products" className="mx-auto max-w-7xl px-5 py-16 md:px-10 md:py-24">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#8a4c4c]">Featured Products</p><h2 className="mt-2 font-serif text-4xl sm:text-5xl">Our Best Sellers</h2><p className="mt-3 max-w-xl text-sm text-[#6d5c55]">Handpicked spices and essentials, loved by homes across India.</p></div><button onClick={() => navigate('/products')} className="flex items-center gap-2 text-xs font-semibold">View All <ArrowRight size={15} /></button></div>
+        <div className="mt-8 flex items-center gap-3 rounded-xl border border-[#e2d5c5] bg-white/70 px-4 py-3"><Search size={17} className="text-[#856d65]" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search spices, tea, rice..." className="w-full bg-transparent text-sm outline-none" />{search && <button onClick={() => setSearch('')}><X size={16} /></button>}</div>
+        {loading ? <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5">{[1,2,3,4,5].map(x => <div key={x} className="h-80 animate-pulse rounded-2xl bg-white" />)}</div> : <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5">{bestSellers.map(p => <ProductCard key={p._id} product={p} onCart={addToCart} onWishlist={toggleWishlist} wished={wishlist.some(x => x._id === p._id)} navigate={navigate} />)}</div>}
       </section>
 
-      {/* CATEGORY COLLECTIONS */}
-      <section id="categories" className="bg-white py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-6 md:px-10">
-          <div className="mb-10"><p className="text-xs font-bold uppercase tracking-[.3em] text-[#8b4b50]">Shop by category</p><h2 className="mt-3 text-4xl font-semibold sm:text-5xl">Everything in its place.</h2></div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {categories.filter((c) => c !== 'All').map((cat) => {
-              const items = categoryProducts(cat)
-              const meta = CATEGORY_META[cat] || { title: cat, text: `Explore all ${cat} products in one place.` }
-              return <button key={cat} onClick={() => goProducts(cat)} className="group overflow-hidden rounded-3xl border border-[#e7ded1] bg-[#f8f4ed] text-left transition hover:-translate-y-1 hover:shadow-xl">
-                <div className="relative h-64 overflow-hidden bg-[#eee7da]">
-                  {items[0] ? <ProductImage product={items[0]} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center"><Logo className="h-16 w-auto opacity-50" /></div>}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" /><span className="absolute bottom-5 left-5 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-[#2e0003]">{items.length || 0} products</span>
-                </div>
-                <div className="p-6"><div className="flex items-center justify-between"><h3 className="text-2xl font-semibold">{meta.title}</h3><ArrowRight size={20} className="transition group-hover:translate-x-1" /></div><p className="mt-3 text-sm leading-6 text-gray-600">{meta.text}</p></div>
-              </button>
-            })}
-          </div>
-        </div>
-      </section>
+      {/* CATEGORIES */}
+      <section id="categories" className="border-y border-[#e4d9c8] bg-[#f0e7da] py-16 md:py-20"><div className="mx-auto max-w-7xl px-5 md:px-10"><div className="flex items-end justify-between gap-5"><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#8a4c4c]">Shop by Category</p><h2 className="mt-2 font-serif text-4xl sm:text-5xl">Explore Our Categories</h2><p className="mt-3 text-sm text-[#6d5c55]">Find exactly what you need, from authentic spices to pure oils and more.</p></div><button onClick={() => navigate('/products')} className="hidden items-center gap-2 text-xs font-semibold sm:flex">View All Categories <ArrowRight size={14} /></button></div><div className="mt-9 flex gap-5 overflow-x-auto pb-3 scrollbar-none">{CATEGORIES.map(c => <button key={c.name} onClick={() => openCategory(c.name)} className="group min-w-[92px] text-center"><div className="mx-auto h-20 w-20 overflow-hidden rounded-full border-4 border-[#f8f2e8] shadow-sm sm:h-24 sm:w-24"><Image src={c.image} alt={c.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" /></div><span className="mt-3 block text-xs font-semibold">{c.name}</span></button>)}</div></div></section>
 
-      {/* CATEGORY PRODUCT ROWS */}
-      <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-28">
-        {categories.filter((c) => c !== 'All').slice(0, 6).map((cat) => { const items = categoryProducts(cat); if (!items.length) return null; return <div key={cat} className="mb-20 last:mb-0"><div className="mb-6 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.25em] text-[#8b4b50]">{cat}</p><h3 className="mt-2 text-3xl font-semibold">{CATEGORY_META[cat]?.title || cat}</h3></div><button onClick={() => goProducts(cat)} className="text-sm font-semibold hover:underline">See all <ArrowRight size={15} className="ml-1 inline" /></button></div><div className="grid grid-cols-2 gap-4 md:grid-cols-4">{items.map((p) => <article key={p._id} onClick={() => navigate(`/product/${p._id}`)} className="group cursor-pointer overflow-hidden rounded-2xl border border-[#e7ded1] bg-white"><div className="h-52 overflow-hidden bg-[#eee7da]"><ProductImage product={p} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div><div className="p-4"><p className="text-[10px] uppercase tracking-wider text-[#9a6b6f]">{cat}</p><h4 className="mt-1 truncate font-semibold">{p.name}</h4><p className="mt-2 font-bold">₹{p.price}</p></div></article>)}</div></div> })}
-      </section>
+      {/* SPOTLIGHT CAROUSEL */}
+      <section className="relative overflow-hidden bg-[#17100c] py-20 text-white md:py-28"><Image src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=2200&q=80" alt="Spice background" className="absolute inset-0 h-full w-full object-cover opacity-25" /><div className="absolute inset-0 bg-[#120806]/65" /><div className="relative mx-auto max-w-7xl px-5 md:px-10"><div className="flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#dcc9ad]">Why Choose Desi Zaika</p><h2 className="mt-2 font-serif text-4xl sm:text-5xl">Pure. Authentic. Trusted.</h2><p className="mt-3 max-w-xl text-sm text-white/60">More than just spices — it is a promise of quality, tradition and real flavour.</p></div><div className="flex gap-2"><button onClick={() => setSpotlight(v => (v - 1 + SPOTLIGHT.length) % SPOTLIGHT.length)} className="rounded-full border border-white/30 p-2"><ChevronLeft size={17} /></button><button onClick={() => setSpotlight(v => (v + 1) % SPOTLIGHT.length)} className="rounded-full border border-white/30 p-2"><ChevronRight size={17} /></button></div></div>
+        <div className="relative mt-12 h-[610px] overflow-visible sm:h-[560px]">{SPOTLIGHT.map((card, index) => { const offset = (index - spotlight + SPOTLIGHT.length) % SPOTLIGHT.length; const positions = [{ x: 0, scale: 1, opacity: 1, z: 30 }, { x: 24, scale: .91, opacity: .62, z: 20 }, { x: 48, scale: .82, opacity: .38, z: 10 }, { x: 72, scale: .73, opacity: .22, z: 5 }]; const pos = positions[offset]; return <article key={card.no} className="absolute left-1/2 top-1/2 h-[510px] w-[min(78vw,430px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[28px] border border-white/15 bg-[#f7f0e6] text-[#2d1715] shadow-2xl transition-all duration-700 ease-out" style={{ transform: `translate(calc(-50% + ${pos.x}px), -50%) scale(${pos.scale})`, opacity: pos.opacity, zIndex: pos.z }}><div className="h-[56%] overflow-hidden"><Image src={card.image} alt={card.title} className="h-full w-full object-cover" /></div><div className="flex h-[44%] flex-col justify-between p-6 sm:p-7"><div><span className="text-xs text-[#8a6b59]">{card.no}</span><h3 className="mt-2 font-serif text-3xl">{card.title}</h3><p className="mt-3 text-sm leading-6 text-[#6b5b54]">{card.text}</p></div><span className="text-xs font-semibold text-[#7e1720]">Learn More <ArrowRight className="ml-1 inline" size={13} /></span></div></article> })}</div><div className="mt-2 text-center text-xs text-white/50">{String(spotlight + 1).padStart(2, '0')} / 04</div>
+      </div></section>
 
-      {/* WHY — spotlight carousel inspired by the referenced Scrolltide component */}
-      <section className="overflow-hidden bg-[#2e0003] py-24 text-white md:py-32">
-        <div className="mx-auto max-w-7xl px-6 md:px-10">
-          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end"><div><p className="text-xs font-bold uppercase tracking-[.3em] text-[#d8cfbc]">Why choose <span className="inline-flex align-middle"><Logo className="ml-1 h-5 w-auto brightness-0 invert" /></span></p><h2 className="mt-4 max-w-2xl text-4xl font-semibold sm:text-6xl">A closer look at<br />what we care about.</h2></div><div className="flex gap-2"><button onClick={prevWhy} aria-label="Previous" className="rounded-full border border-white/20 p-3 transition hover:bg-white hover:text-[#2e0003]"><ChevronLeft size={19} /></button><button onClick={nextWhy} aria-label="Next" className="rounded-full border border-white/20 p-3 transition hover:bg-white hover:text-[#2e0003]"><ChevronRight size={19} /></button></div></div>
-          {whyProducts.length ? <div className="relative mx-auto mt-14 h-[500px] max-w-6xl sm:h-[560px]">{whyProducts.map((p, i) => { const offset = i - whyIndex; const normalized = ((offset + whyProducts.length + Math.floor(whyProducts.length / 2)) % whyProducts.length) - Math.floor(whyProducts.length / 2); const active = normalized === 0; return <div key={p._id} className="absolute left-1/2 top-0 h-full w-[82%] max-w-[720px] overflow-hidden rounded-[2rem] border border-white/10 bg-black transition-all duration-700" style={{ transform: `translateX(-50%) translateX(${normalized * 34}%) scale(${active ? 1 : 0.82})`, opacity: Math.abs(normalized) > 2 ? 0 : active ? 1 : 0.38, zIndex: 20 - Math.abs(normalized) }}><ProductImage product={p} className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" /><div className="relative flex h-full flex-col justify-end p-7 sm:p-10"><div className="mb-3 flex items-center gap-3"><span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[.2em]">{p.category || 'Desi Zaika'}</span><span className="text-xs text-white/60">{String(i + 1).padStart(2, '0')}</span></div><h3 className="max-w-xl text-3xl font-semibold sm:text-5xl">{p.name}</h3><p className="mt-3 max-w-xl text-sm leading-7 text-white/75">{p.description || 'Carefully selected products for everyday Indian kitchens.'}</p></div></div> })}</div> : <div className="mt-14 rounded-3xl border border-white/10 p-12 text-center text-white/60">Add products with images from the admin panel to populate this spotlight.</div>}
-        </div>
-      </section>
+      {/* STORY */}
+      <section id="story" className="mx-auto max-w-7xl px-5 py-20 md:px-10 md:py-28"><div className="grid gap-10 lg:grid-cols-[.75fr_1.25fr] lg:items-center"><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#8a4c4c]">Our Story</p><h2 className="mt-3 font-serif text-4xl leading-tight sm:text-6xl">The Story Behind<br />Every Spice</h2><p className="mt-5 max-w-md text-sm leading-7 text-[#6d5c55]">From fertile farms to your kitchen, we bring the character of ingredients and traditional flavour to everyday meals.</p><button onClick={() => document.getElementById('story-cards')?.scrollIntoView({ behavior: 'smooth' })} className="mt-7 rounded-full bg-[#7e1720] px-6 py-3 text-xs font-semibold text-white">Our Story <ArrowRight className="ml-2 inline" size={14} /></button></div><div id="story-cards" className="grid grid-cols-2 gap-3 sm:grid-cols-4">{STORY.map(card => <article key={card.no} className="group relative h-[360px] overflow-hidden rounded-xl"><Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" /><div className="absolute bottom-0 p-4 text-white sm:p-5"><span className="text-[10px]">{card.no}</span><h3 className="mt-1 font-serif text-xl sm:text-2xl">{card.title}</h3><p className="mt-2 hidden text-xs leading-5 text-white/70 sm:block">{card.text}</p></div></article>)}</div></div></section>
 
-      {/* BRAND INTRO */}
-      <section className="mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-32"><div className="grid gap-10 md:grid-cols-2 md:items-end"><div><p className="text-xs font-bold uppercase tracking-[.3em] text-[#8b4b50]">The Desi Zaika way</p><div className="mt-5"><Logo className="h-16 w-auto" /></div><h2 className="mt-6 text-4xl font-semibold leading-tight sm:text-6xl">Good food starts<br /><span className="text-[#8b4b50]">with good flavour.</span></h2></div><p className="max-w-xl text-sm leading-8 text-gray-600 md:justify-self-end">A simple shopping experience built around categories, clear products and the flavours people reach for every day.</p></div></section>
+      {/* REAL TASTE HOME */}
+      <section className="relative min-h-[520px] overflow-hidden"><Image src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90" alt="Indian food and spices" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/55" /><div className="relative mx-auto flex min-h-[520px] max-w-7xl items-center justify-between gap-8 px-6 text-white md:px-10"><div className="max-w-xl"><p className="text-[10px] font-bold uppercase tracking-[.3em] text-white/70">Desi Zaika</p><h2 className="mt-3 font-serif text-5xl leading-[.95] sm:text-6xl">Bringing Real Taste<br />Home</h2><p className="mt-5 text-sm leading-7 text-white/70">Traditional flavours. Modern convenience. Everything you need to make everyday food feel special.</p><button onClick={() => navigate('/products')} className="mt-7 rounded-full bg-[#8e1c27] px-6 py-3 text-xs font-semibold">Shop Now <ArrowRight className="ml-2 inline" size={14} /></button></div><Logo dark className="hidden h-24 w-48 md:block" /></div></section>
 
-      {/* STACKED STORY */}
-      <section className="bg-[#f6f1e8] px-6 py-28 md:px-10 md:py-36"><div className="mx-auto max-w-7xl"><div className="mb-16 max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.3em] text-[#8b4b50]">Scroll the story</p><div className="mt-5"><Logo className="h-10 w-auto" /></div><h2 className="mt-4 text-4xl font-semibold sm:text-6xl">A flavour story,<br /><span className="text-[#8b4b50]">one layer at a time.</span></h2></div><div className="space-y-10">{STORY.map((c, i) => <article key={c[0]} className="sticky overflow-hidden rounded-3xl border border-[#ddd2c3] bg-white shadow-2xl" style={{ top: `${82 + i * 12}px`, minHeight: '72vh' }}><div className="grid min-h-[72vh] md:grid-cols-2"><div className="relative min-h-[360px] bg-[#2e0003] md:min-h-full"><div className="absolute inset-0 flex items-center justify-center opacity-10"><Logo className="h-32 w-auto brightness-0 invert" /></div><span className="absolute left-6 top-6 rounded-full bg-white/90 px-4 py-2 text-xs font-bold tracking-widest">{c[0]}</span></div><div className="flex flex-col justify-center p-8 sm:p-12 md:p-20"><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.3em] text-[#8b4b50]"><Logo className="h-5 w-auto" /></p><h3 className="mt-5 max-w-lg text-3xl font-semibold leading-tight sm:text-5xl">{c[1]}</h3><p className="mt-7 max-w-lg text-sm leading-8 text-gray-600 sm:text-base">{c[2]}</p><div className="mt-10 h-px w-20 bg-[#2e0003]" /><p className="mt-5 text-xs uppercase tracking-[.2em] text-gray-400">Scroll to continue</p></div></div></article>)}</div></div></section>
-
-      {/* FINAL CTA */}
-      <section className="relative overflow-hidden bg-[#d8cfbc] px-6 py-24 md:px-10 md:py-32"><div className="mx-auto flex max-w-6xl flex-col items-center text-center"><Logo className="h-20 w-auto" /><h2 className="mt-7 text-4xl font-semibold text-[#2e0003] sm:text-6xl">Bring the real taste home.</h2><p className="mt-5 max-w-xl text-sm leading-7 text-[#5f5150]">Explore every category and discover your next kitchen essential.</p><button onClick={() => goProducts()} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#2e0003] px-7 py-3.5 text-sm font-semibold text-white">Shop Now <ArrowRight size={17} /></button></div></section>
+      {/* FOOTER */}
+      <footer id="contact" className="bg-[#f7f1e7] px-5 py-12 md:px-10 md:py-16"><div className="mx-auto max-w-7xl"><div className="flex flex-col items-center justify-between gap-8 border-b border-[#ddd0bf] pb-10 md:flex-row"><Logo className="h-16 w-44" /><div className="flex flex-wrap justify-center gap-6 text-xs text-[#5d4b45]"><button onClick={() => navigate('/products')}>Shop</button><a href="#categories">Categories</a><a href="#story">About</a><a href="#contact">Contact</a></div><div className="flex gap-3 text-[#5d4b45]"><span>f</span><span>◎</span><span>▶</span><span>p</span></div></div><div className="flex flex-col justify-between gap-3 pt-6 text-[10px] text-[#85736b] sm:flex-row"><span>© 2026 Desi Zaika. All rights reserved.</span><div className="flex gap-5"><span>Privacy Policy</span><span>Terms & Conditions</span></div></div></div></footer>
     </main>
   )
 }
