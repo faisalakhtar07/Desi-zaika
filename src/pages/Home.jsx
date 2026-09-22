@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Heart, Search, ShoppingCart, User, Menu, X, Sparkles } from 'lucide-react'
+import { Heart, Search, ShoppingCart, X, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const API_URL = 'https://desi-zaika-backend.onrender.com/api/products'
@@ -95,7 +95,6 @@ export default function Home() {
   const [heroSlide, setHeroSlide] = useState(0)
   const [search, setSearch] = useState('')
   const [wishlist, setWishlist] = useState(() => { try { return JSON.parse(localStorage.getItem('wishlist') || '[]') } catch { return [] } })
-  const [menu, setMenu] = useState(false)
 
   useEffect(() => {
     fetch(API_URL).then(r => r.json()).then(data => {
@@ -151,19 +150,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f1e7] text-[#2d1715]">
-      {/* NAVBAR */}
-      <header className="absolute left-0 right-0 top-0 z-50 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10 md:py-6">
-          <button onClick={() => navigate("/#home")} className="flex items-center gap-2.5" aria-label="Desi Zaika Home"><img src="/logo-maskable.png" alt="Desi Zaika logo" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/logo-512.png" }} className="h-9 w-9 rounded-full object-contain bg-white/10 p-1 md:h-11 md:w-11" /><span className="font-serif text-xl font-semibold tracking-tight md:text-2xl">Desi Zaika</span></button>
-          <nav className="hidden items-center gap-7 text-xs font-medium md:flex">
-            <a href="#home" className="hover:opacity-70">Home</a><button onClick={() => navigate('/products')} className="hover:opacity-70">Shop</button><a href="#categories" className="hover:opacity-70">Categories</a><a href="#story" className="hover:opacity-70">About</a><a href="#contact" className="hover:opacity-70">Contact</a>
-          </nav>
-          <div className="hidden items-center gap-4 md:flex"><button aria-label="Search" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}><Search size={18} /></button><button aria-label="Wishlist" onClick={() => navigate('/wishlist')}><Heart size={18} /></button><button aria-label="Cart" onClick={() => navigate('/cart')}><ShoppingCart size={18} /></button><button aria-label="Profile" onClick={() => navigate('/profile')}><User size={18} /></button></div>
-          <button onClick={() => setMenu(v => !v)} className="rounded-full bg-white/10 p-2 backdrop-blur md:hidden" aria-label="Menu">{menu ? <X /> : <Menu />}</button>
-        </div>
-        {menu && <div className="mx-4 rounded-2xl border border-white/20 bg-[#2d0809]/95 p-5 shadow-xl backdrop-blur md:hidden"><div className="grid gap-4 text-sm"><a href="#home" onClick={() => setMenu(false)}>Home</a><button className="text-left" onClick={() => navigate('/products')}>Shop</button><a href="#categories" onClick={() => setMenu(false)}>Categories</a><a href="#story" onClick={() => setMenu(false)}>About</a><a href="#contact" onClick={() => setMenu(false)}>Contact</a></div></div>}
-      </header>
-
       {/* HERO IMAGE SLIDER */}
       <section id="home" className="relative min-h-[650px] h-[92vh] overflow-hidden bg-[#180808]">
         {HERO_IMAGES.map((src, index) => (
@@ -257,8 +243,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STORY */}
-      <section id="story" className="mx-auto max-w-7xl px-5 py-20 md:px-10 md:py-28"><div className="grid gap-10 lg:grid-cols-[.75fr_1.25fr] lg:items-center"><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#8a4c4c]">Our Story</p><h2 className="mt-3 font-serif text-4xl leading-tight sm:text-6xl">The Story Behind<br />Every Spice</h2><p className="mt-5 max-w-md text-sm leading-7 text-[#6d5c55]">From fertile farms to your kitchen, we bring the character of ingredients and traditional flavour to everyday meals.</p><button onClick={() => document.getElementById('story-cards')?.scrollIntoView({ behavior: 'smooth' })} className="mt-7 rounded-full bg-[#7e1720] px-6 py-3 text-xs font-semibold text-white">Our Story</button></div><div id="story-cards" className="relative pb-[55vh]">{STORY.map((card, index) => <article key={card.no} className="sticky top-20 mb-[-38vh] h-[70vh] min-h-[440px] overflow-hidden rounded-2xl border border-[#e4d9c8] bg-[#2d1715] shadow-2xl" style={{ zIndex: index + 1 }}><Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/5" /><div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10"><div className="flex items-end justify-between gap-6"><div className="max-w-2xl"><span className="text-xs tracking-[.2em] text-white/60">{card.no}</span><h3 className="mt-2 font-serif text-4xl sm:text-6xl">{card.title}</h3><p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:text-base">{card.text}</p></div><span className="hidden text-xs text-white/50 sm:block">Scroll to continue</span></div></div></article>)}</div></div></section>
+      {/* STORY — STICKY STACKED CARDS */}
+      <section id="story" className="bg-[#f6f1e8] px-5 py-20 md:px-10 md:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 max-w-2xl md:mb-16">
+            <p className="text-[10px] font-bold uppercase tracking-[.3em] text-[#8a4c4c]">Our Story</p>
+            <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl md:text-6xl">The Story Behind<br />Every Spice</h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-[#6d5c55] sm:text-base">From carefully selected ingredients to the meals on your table, follow the simple journey behind the Desi Zaika flavour.</p>
+          </div>
+
+          <div className="mx-auto max-w-5xl">
+            {STORY.map((card, index) => (
+              <article
+                key={card.no}
+                className="sticky mb-8 overflow-hidden rounded-[28px] border border-[#e4d9c8] bg-[#2d1715] shadow-[0_24px_70px_rgba(45,23,21,.20)] md:mb-10 md:rounded-[36px]"
+                style={{ top: `${86 + index * 18}px`, zIndex: index + 1 }}
+              >
+                <div className="relative h-[70vh] min-h-[430px] max-h-[650px] w-full">
+                  <Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
+
+                  <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-9 md:p-12">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold tracking-[.22em] text-white/65">{card.no}</span>
+                      <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.18em] backdrop-blur-sm">Our Story</span>
+                    </div>
+
+                    <div className="max-w-2xl">
+                      <h3 className="font-serif text-4xl leading-none sm:text-5xl md:text-6xl">{card.title}</h3>
+                      <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">{card.text}</p>
+                      <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-white/55">
+                        <span className="h-px w-10 bg-white/50" />
+                        Scroll to continue
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* REAL TASTE HOME */}
       <section className="relative min-h-[520px] overflow-hidden"><Image src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90" alt="Indian food and spices" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/55" /><div className="relative mx-auto flex min-h-[520px] max-w-7xl items-center justify-between gap-8 px-6 text-white md:px-10"><div className="max-w-xl"><p className="text-[10px] font-bold uppercase tracking-[.3em] text-white/70">Desi Zaika</p><h2 className="mt-3 font-serif text-5xl leading-[.95] sm:text-6xl">Bringing Real Taste<br />Home</h2><p className="mt-5 text-sm leading-7 text-white/70">Traditional flavours. Modern convenience. Everything you need to make everyday food feel special.</p><button onClick={() => navigate('/products')} className="mt-7 rounded-full bg-[#8e1c27] px-6 py-3 text-xs font-semibold">Shop Now </button></div><Logo dark className="hidden h-24 w-48 md:block" /></div></section>
