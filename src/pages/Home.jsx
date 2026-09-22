@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingCart, UserRound, Menu, X, Sparkles } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, ChevronLeft, ChevronRight, Heart, Search, ShoppingCart, User, Menu, X, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const API_URL = 'https://desi-zaika-backend.onrender.com/api/products'
 const LOGO = '/logo.png'
-const HERO_VIDEO = '/hero.mp4'
+const HERO_IMAGES = ['/hero-1.jpg', '/hero-2.jpg', '/hero-3.jpg', '/hero-4.jpg', '/hero-5.jpg']
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1400&q=85'
 
-const HERO_POSTER = 'https://images.unsplash.com/photo-1596040447447-9e8e13e7a0e2?auto=format&fit=crop&w=2200&q=90'
 
 const CATEGORIES = [
   { name: 'Spices', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=700&q=85' },
@@ -93,10 +92,10 @@ export default function Home() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [spotlight, setSpotlight] = useState(0)
+  const [heroSlide, setHeroSlide] = useState(0)
   const [search, setSearch] = useState('')
   const [wishlist, setWishlist] = useState(() => { try { return JSON.parse(localStorage.getItem('wishlist') || '[]') } catch { return [] } })
   const [menu, setMenu] = useState(false)
-  const videoRef = useRef(null)
 
   useEffect(() => {
     fetch(API_URL).then(r => r.json()).then(data => {
@@ -108,6 +107,10 @@ export default function Home() {
   useEffect(() => { localStorage.setItem('wishlist', JSON.stringify(wishlist)) }, [wishlist])
   useEffect(() => {
     const timer = setInterval(() => setSpotlight(v => (v + 1) % SPOTLIGHT.length), 4200)
+    return () => clearInterval(timer)
+  }, [])
+  useEffect(() => {
+    const timer = setInterval(() => setHeroSlide(v => (v + 1) % HERO_IMAGES.length), 5000)
     return () => clearInterval(timer)
   }, [])
 
@@ -142,16 +145,18 @@ export default function Home() {
           <nav className="hidden items-center gap-7 text-xs font-medium md:flex">
             <a href="#home" className="hover:opacity-70">Home</a><button onClick={() => navigate('/products')} className="hover:opacity-70">Shop</button><a href="#categories" className="hover:opacity-70">Categories</a><a href="#story" className="hover:opacity-70">About</a><a href="#contact" className="hover:opacity-70">Contact</a>
           </nav>
-          <div className="hidden items-center gap-4 md:flex"><button aria-label="Search" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}><Search size={18} /></button><button aria-label="Wishlist" onClick={() => navigate('/wishlist')}><Heart size={18} /></button><button aria-label="Cart" onClick={() => navigate('/cart')}><ShoppingCart size={18} /></button><button aria-label="Profile" onClick={() => navigate('/profile')}><UserRound size={18} /></button></div>
+          <div className="hidden items-center gap-4 md:flex"><button aria-label="Search" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}><Search size={18} /></button><button aria-label="Wishlist" onClick={() => navigate('/wishlist')}><Heart size={18} /></button><button aria-label="Cart" onClick={() => navigate('/cart')}><ShoppingCart size={18} /></button><button aria-label="Profile" onClick={() => navigate('/profile')}><User size={18} /></button></div>
           <button onClick={() => setMenu(v => !v)} className="rounded-full bg-white/10 p-2 backdrop-blur md:hidden" aria-label="Menu">{menu ? <X /> : <Menu />}</button>
         </div>
         {menu && <div className="mx-4 rounded-2xl border border-white/20 bg-[#2d0809]/95 p-5 shadow-xl backdrop-blur md:hidden"><div className="grid gap-4 text-sm"><a href="#home" onClick={() => setMenu(false)}>Home</a><button className="text-left" onClick={() => navigate('/products')}>Shop</button><a href="#categories" onClick={() => setMenu(false)}>Categories</a><a href="#story" onClick={() => setMenu(false)}>About</a><a href="#contact" onClick={() => setMenu(false)}>Contact</a></div></div>}
       </header>
 
-      {/* HERO VIDEO */}
+      {/* HERO IMAGE SLIDER */}
       <section id="home" className="relative min-h-[650px] h-[92vh] overflow-hidden bg-[#180808]">
-        <video ref={videoRef} autoPlay muted loop playsInline poster={HERO_POSTER} className="absolute inset-0 h-full w-full object-cover" src={HERO_VIDEO} />
-        <div className="absolute inset-0 bg-black/45" /><div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/15" />
+        {HERO_IMAGES.map((src, index) => (
+          <Image key={src} src={src} alt={`Desi Zaika hero ${index + 1}`} className={`absolute inset-0 h-full w-full object-cover transition-all duration-[1200ms] ease-out ${index === heroSlide ? 'scale-100 opacity-100' : 'scale-105 opacity-0'}`} />
+        ))}
+        <div className="absolute inset-0 bg-black/45" /><div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/10" />
         <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 pt-20 md:px-10">
           <div className="max-w-2xl text-white">
             <p className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.35em] text-white/75"><Sparkles size={13} /> Desi Zaika</p>
@@ -160,7 +165,14 @@ export default function Home() {
             <button onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })} className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#8e1c27] px-6 py-3.5 text-sm font-semibold text-white shadow-lg">Shop Now <ArrowRight size={17} /></button>
           </div>
         </div>
-        <div className="absolute bottom-7 left-6 right-6 z-10 flex items-end justify-between text-white md:left-10 md:right-10"><div className="text-xs text-white/70">↓ &nbsp; Scroll to explore</div><div className="flex items-center gap-4 text-xs"><span>01</span><span className="text-white/40">02</span><span className="text-white/40">03</span><span className="text-white/40">04</span><span className="ml-3">Ⅱ</span></div></div>
+        <button onClick={() => setHeroSlide(v => (v - 1 + HERO_IMAGES.length) % HERO_IMAGES.length)} aria-label="Previous hero image" className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/30 bg-black/20 p-2.5 text-white backdrop-blur transition hover:bg-black/40 sm:left-7"><ChevronLeft size={20} /></button>
+        <button onClick={() => setHeroSlide(v => (v + 1) % HERO_IMAGES.length)} aria-label="Next hero image" className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/30 bg-black/20 p-2.5 text-white backdrop-blur transition hover:bg-black/40 sm:right-7"><ChevronRight size={20} /></button>
+        <div className="absolute bottom-7 left-6 right-6 z-20 flex items-end justify-between text-white md:left-10 md:right-10">
+          <div className="text-xs text-white/70">↓ &nbsp; Scroll to explore</div>
+          <div className="flex items-center gap-2">
+            {HERO_IMAGES.map((_, index) => <button key={index} onClick={() => setHeroSlide(index)} aria-label={`Go to hero image ${index + 1}`} className={`h-1.5 rounded-full transition-all ${index === heroSlide ? 'w-8 bg-white' : 'w-4 bg-white/35'}`} />)}
+          </div>
+        </div>
       </section>
 
       {/* PRODUCTS FIRST */}
