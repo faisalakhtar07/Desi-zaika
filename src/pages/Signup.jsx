@@ -36,6 +36,13 @@ export default function Signup() {
       return
     }
 
+    const phone = formData.phone.trim()
+
+    if (!/^\d{10}$/.test(phone)) {
+      setError('Phone number must be exactly 10 digits')
+      return
+    }
+
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters')
       return
@@ -45,22 +52,27 @@ export default function Signup() {
 
     try {
       const response = await api.post('/auth/signup', {
-        name: formData.name,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        phone,
         password: formData.password
       })
 
-      if (response.data?.token) {
-        setToken(response.data.token)
-        if (response.data.user) {
-          setUser(response.data.user)
+      // api.js returns response.data, so token/user are directly on response.
+      if (response?.token) {
+        setToken(response.token)
+        if (response.user) {
+          setUser(response.user)
         }
         navigate('/')
       } else {
-        setError('Signup failed. Please try again.')
+        setError(response?.message || 'Signup failed. Please try again.')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed. Please try again.')
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Signup failed. Please try again.'
+      )
     } finally {
       setLoading(false)
     }
