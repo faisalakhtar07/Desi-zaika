@@ -7,36 +7,42 @@ import api from '../services/api'
 export default function Signup() {
   const navigate = useNavigate()
   const { setToken, setUser } = useAuthStore()
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   })
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
+
     setError('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
     setError('')
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+    const name = formData.name.trim()
+    const phone = formData.phone.trim()
+
+    if (!name) {
+      setError('Please enter your name')
       return
     }
-
-    const phone = formData.phone.trim()
 
     if (!/^\d{10}$/.test(phone)) {
       setError('Phone number must be exactly 10 digits')
@@ -48,31 +54,39 @@ export default function Signup() {
       return
     }
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
     try {
       const response = await api.post('/auth/signup', {
-        name: formData.name.trim(),
+        name,
         phone,
-        password: formData.password
+        password: formData.password,
       })
 
-      // api.js returns response.data, so token/user are directly on response.
+      // api.js returns response.data directly
       if (response?.token) {
         setToken(response.token)
+
         if (response.user) {
           setUser(response.user)
         }
-        navigate('/')
+
+        navigate('/', { replace: true })
       } else {
         setError(response?.message || 'Signup failed. Please try again.')
       }
     } catch (err) {
-      setError(
+      const message =
         err.response?.data?.message ||
         err.response?.data?.error ||
         'Signup failed. Please try again.'
-      )
+
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -82,10 +96,17 @@ export default function Signup() {
     <div className="min-h-screen bg-[#f0ebe0] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-[#2e0003] text-center mb-2">Desi Zaika</h1>
-          <p className="text-gray-600 text-center mb-8">Premium Indian Spices</p>
+          <h1 className="text-3xl font-bold text-[#2e0003] text-center mb-2">
+            Desi Zaika
+          </h1>
 
-          <h2 className="text-2xl font-bold text-[#2e0003] mb-6">Create Account</h2>
+          <p className="text-gray-600 text-center mb-8">
+            Premium Indian Spices
+          </p>
+
+          <h2 className="text-2xl font-bold text-[#2e0003] mb-6">
+            Create Account
+          </h2>
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -95,34 +116,46 @@ export default function Signup() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Full Name
+              </label>
+
               <input
                 type="text"
                 name="name"
                 placeholder="Your name"
                 value={formData.name}
                 onChange={handleChange}
+                autoComplete="name"
                 required
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number
+              </label>
+
               <input
                 type="tel"
                 name="phone"
                 placeholder="10 digit mobile number"
                 value={formData.phone}
                 onChange={handleChange}
-                maxLength="10"
+                maxLength={10}
+                inputMode="numeric"
+                autoComplete="tel"
                 required
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Password
+              </label>
+
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -130,21 +163,31 @@ export default function Signup() {
                   placeholder="Min 6 characters"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="new-password"
                   required
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
+                  className="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
                 />
+
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Confirm Password
+              </label>
+
               <div className="relative">
                 <input
                   type={showConfirm ? 'text' : 'password'}
@@ -152,15 +195,22 @@ export default function Signup() {
                   placeholder="Confirm password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  autoComplete="new-password"
                   required
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
+                  className="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
                 />
+
                 <button
                   type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
+                  onClick={() => setShowConfirm((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+                  aria-label={showConfirm ? 'Hide password' : 'Show password'}
                 >
-                  {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirm ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
@@ -168,7 +218,7 @@ export default function Signup() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#2e0003] text-[#D8cfbc] font-bold py-2 rounded-lg hover:bg-[#4a0a10] transition disabled:opacity-50"
+              className="w-full bg-[#2e0003] text-[#D8cfbc] font-bold py-2 rounded-lg hover:bg-[#4a0a10] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
@@ -176,7 +226,10 @@ export default function Signup() {
 
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-[#2e0003] font-bold hover:underline">
+            <Link
+              to="/login"
+              className="text-[#2e0003] font-bold hover:underline"
+            >
               Login
             </Link>
           </p>

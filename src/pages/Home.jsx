@@ -6,470 +6,318 @@ import {
   ShieldCheck,
   Truck,
   Heart,
-  Sparkles,
-  PackageCheck,
-  Utensils,
-  ChevronDown,
+  Search,
 } from 'lucide-react'
-import {
-  motion,
-  useScroll,
-  useTransform,
-} from 'framer-motion'
+import { motion } from 'framer-motion'
 import ProductCard from '../components/ProductCard'
 import TestimonialCarousel from '../components/TestimonialCarousel'
 
 const API_URL =
   'https://desi-zaika-backend.onrender.com/api/products'
 
-const CATEGORY_IMAGES = {
-  Spices:
-    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=85',
-
-  Tea:
-    'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=900&q=85',
-
-  Rice:
-    'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=900&q=85',
-
-  Herbs:
-    'https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=900&q=85',
-
-  Oils:
-    'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=900&q=85',
-
-  Grains:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=85',
-}
-
-const STORY_CARDS = [
+const storyCards = [
   {
     number: '01',
     title: 'Rooted in Tradition',
-    text: 'Indian kitchens have always been about warmth, flavour and memories. Desi Zaika brings that feeling to your everyday cooking.',
-    image:
-      'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=85',
+    description:
+      'Inspired by the flavours that have always been a part of Indian kitchens.',
   },
   {
     number: '02',
     title: 'Selected with Care',
-    text: 'From spices and herbs to rice, tea and grains, we focus on everyday ingredients chosen for authentic taste.',
-    image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85',
+    description:
+      'Every ingredient is chosen with focus on quality, flavour and everyday use.',
   },
   {
     number: '03',
     title: 'Made for Everyday Cooking',
-    text: 'Good food does not need to be complicated. Our collection is made to fit naturally into your daily kitchen.',
-    image:
-      'https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&w=1200&q=85',
+    description:
+      'Simple, authentic ingredients created to become a part of your daily meals.',
   },
   {
     number: '04',
     title: 'From Us to Your Kitchen',
-    text: 'Our goal is simple — make authentic Indian ingredients easier to discover and bring home.',
-    image:
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=85',
+    description:
+      'Carefully packed and delivered so authentic Desi Zaika reaches your home.',
   },
 ]
-
-const WHY_CHOOSE = [
-  {
-    icon: Leaf,
-    title: 'Authentic Ingredients',
-    text: 'Thoughtfully selected ingredients inspired by Indian kitchens.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Quality First',
-    text: 'We keep quality and consistency at the heart of every product.',
-  },
-  {
-    icon: PackageCheck,
-    title: 'Careful Packaging',
-    text: 'Products are packed with attention so they reach you safely.',
-  },
-  {
-    icon: Truck,
-    title: 'Reliable Delivery',
-    text: 'A simple shopping experience from our kitchen shelf to your door.',
-  },
-]
-
-const getCategoryName = (category) => {
-  if (!category) return 'Spices'
-
-  if (typeof category === 'object') {
-    return category.name || 'Spices'
-  }
-
-  return String(category)
-}
-
-/* --------------------------------
-   STORY CARD
--------------------------------- */
-
-const StoryCard = ({ card, index }) => {
-  const { scrollYProgress } = useScroll()
-
-  const y = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [index * 8, index * -3]
-  )
-
-  return (
-    <motion.article
-      style={{
-        y,
-        top: `${90 + index * 18}px`,
-        zIndex: index + 1,
-      }}
-      initial={{
-        opacity: 0,
-        y: 70,
-        scale: 0.96,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        scale: 1,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.25,
-      }}
-      transition={{
-        duration: 0.65,
-        delay: index * 0.08,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className="sticky mx-auto mb-8 w-full max-w-5xl"
-    >
-      <div className="group overflow-hidden rounded-[28px] border border-[#d9cdbd] bg-[#f8f4ec] shadow-[0_20px_60px_rgba(46,0,3,0.10)] transition-all duration-500 hover:shadow-[0_28px_75px_rgba(46,0,3,0.16)]">
-        <div className="grid min-h-[390px] grid-cols-1 md:grid-cols-2">
-
-          {/* Image */}
-          <div className="relative min-h-[250px] overflow-hidden md:min-h-[390px]">
-            <motion.img
-              src={card.image}
-              alt={card.title}
-              className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-              loading="lazy"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-[#2e0003]/50 via-transparent to-transparent" />
-
-            <div className="absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-sm font-bold text-[#2e0003] shadow-sm backdrop-blur">
-              {card.number}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex flex-col justify-center p-8 sm:p-10 md:p-12">
-            <p className="mb-3 text-xs font-semibold tracking-[0.22em] text-[#7d6d62]">
-              OUR STORY
-            </p>
-
-            <h3 className="mb-5 text-3xl font-bold leading-tight text-[#2e0003] sm:text-4xl">
-              {card.title}
-            </h3>
-
-            <p className="max-w-md text-base leading-7 text-[#665b55]">
-              {card.text}
-            </p>
-
-            <div className="mt-8 h-px w-16 bg-[#2e0003]/30 transition-all duration-500 group-hover:w-28" />
-          </div>
-        </div>
-      </div>
-    </motion.article>
-  )
-}
-
-/* --------------------------------
-   HOME
--------------------------------- */
 
 const Home = () => {
   const navigate = useNavigate()
 
   const [products, setProducts] = useState([])
-  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
-
-  /* --------------------------------
-     FETCH PRODUCTS + CATEGORIES
-  -------------------------------- */
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch(API_URL),
-          fetch(`${API_URL}/categories`),
-        ])
+        setLoading(true)
 
-        const productsData = await productsRes.json()
-        const categoriesData = await categoriesRes.json()
+        const res = await fetch(API_URL)
 
-        const productList = Array.isArray(productsData)
-          ? productsData
-          : productsData.products || []
+        if (!res.ok) {
+          throw new Error('Unable to fetch products')
+        }
 
-        const categoryList = Array.isArray(categoriesData)
-          ? categoriesData
-          : categoriesData.categories || []
+        const data = await res.json()
+
+        const productList = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.products)
+          ? data.products
+          : []
 
         setProducts(productList.slice(0, 8))
-        setCategories(categoryList)
       } catch (error) {
-        console.error('Error loading home data:', error)
+        console.error('Product fetch error:', error)
+        setProducts([])
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
+    fetchProducts()
   }, [])
 
-  /* --------------------------------
-     SEARCH
-  -------------------------------- */
+  const handleSearch = () => {
+    const value = search.trim()
 
-  const handleSearch = (e) => {
-    if (e.key === 'Enter') {
-      const value = e.currentTarget.value.trim()
-
-      if (value) {
-        navigate(`/products?search=${encodeURIComponent(value)}`)
-      }
+    if (!value) {
+      navigate('/products')
+      return
     }
+
+    navigate(`/products?search=${encodeURIComponent(value)}`)
   }
 
-  /* --------------------------------
-     RENDER
-  -------------------------------- */
-
   return (
-    <div className="min-h-screen bg-[#f0ebe0] text-[#2e0003]">
+    <main className="min-h-screen bg-[#f0ebe0]">
 
-      {/* =====================================
-          HERO
-      ===================================== */}
+      {/* ================= HERO ================= */}
 
-      <section className="relative h-[600px] overflow-hidden bg-[#2e0003] text-white">
+      <section className="relative overflow-hidden bg-[#f7f3eb]">
+        <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-[#2e0003]/5 blur-3xl" />
+        <div className="absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#d8cfbc]/60 blur-3xl" />
 
-        {/* Background */}
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1800&q=85"
-            alt="Indian spices"
-            className="h-full w-full object-cover opacity-35"
-          />
+        <div className="relative mx-auto grid min-h-[620px] max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-20">
 
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2e0003] via-[#2e0003]/75 to-[#2e0003]/40" />
-        </div>
-
-        <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-center px-6 py-20">
+          {/* Left */}
 
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
+            initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.8,
-              ease: [0.22, 1, 0.36, 1],
-            }}
+            transition={{ duration: 0.6 }}
+            className="max-w-xl"
           >
-
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur">
-              <Sparkles size={15} />
-              <span className="text-sm font-medium">
-                Authentic Indian Flavours
-              </span>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2e0003]/10 bg-white px-4 py-2 text-sm font-medium text-[#2e0003] shadow-sm">
+              <Leaf size={16} />
+              Authentic Indian Flavours
             </div>
 
-            <h1 className="mb-6 max-w-3xl text-5xl font-bold leading-[1.05] md:text-6xl">
-              Taste the{' '}
-              <span className="italic font-normal">
-                real
-              </span>{' '}
-              Desi Zaika.
+            <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-[#2e0003] sm:text-6xl lg:text-7xl">
+              Simple ingredients.
+              <br />
+              <span className="font-serif italic font-normal">
+                Real desi flavour.
+              </span>
             </h1>
 
-            <p className="mb-8 max-w-2xl text-lg leading-8 text-gray-200">
-              Discover carefully selected spices, herbs, rice, tea and
-              everyday ingredients that bring authentic Indian flavour
-              to your kitchen.
+            <p className="mt-6 max-w-lg text-base leading-7 text-gray-600 sm:text-lg">
+              Carefully selected spices, herbs, rice, tea and everyday
+              ingredients made for the heart of every Indian kitchen.
             </p>
 
             {/* Search */}
-            <div className="flex max-w-2xl flex-col gap-3 sm:flex-row">
+
+            <div className="mt-8 flex max-w-lg items-center rounded-2xl border border-[#2e0003]/10 bg-white p-2 shadow-[0_12px_40px_rgba(46,0,3,0.07)]">
+              <Search
+                size={20}
+                className="ml-3 shrink-0 text-gray-400"
+              />
 
               <input
                 type="text"
-                placeholder="Search spices, rice, herbs..."
-                onKeyDown={handleSearch}
-                className="h-13 flex-1 rounded-xl border border-white/20 bg-white px-5 text-gray-900 outline-none transition focus:ring-4 focus:ring-[#D8cfbc]/30"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch()
+                  }
+                }}
+                placeholder="Search spices, rice, tea..."
+                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-[#2e0003] outline-none placeholder:text-gray-400"
               />
 
               <button
-                onClick={() => navigate('/products')}
-                className="flex h-13 items-center justify-center gap-2 rounded-xl bg-[#D8cfbc] px-7 font-semibold text-[#2e0003] transition hover:bg-white"
+                type="button"
+                onClick={handleSearch}
+                className="flex items-center gap-2 rounded-xl bg-[#2e0003] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#47070c]"
               >
                 Search
-                <ArrowRight size={19} />
+                <ArrowRight size={17} />
               </button>
-
             </div>
+
+            {/* Buttons */}
 
             <div className="mt-6 flex flex-wrap gap-3">
-
               <button
+                type="button"
                 onClick={() => navigate('/products')}
-                className="rounded-xl bg-white px-7 py-3 font-semibold text-[#2e0003] transition hover:-translate-y-0.5"
+                className="rounded-xl bg-[#2e0003] px-6 py-3.5 font-semibold text-white transition hover:bg-[#47070c]"
               >
-                Shop Now
+                Shop Products
               </button>
 
               <button
+                type="button"
                 onClick={() => navigate('/about')}
-                className="rounded-xl border border-white/50 px-7 py-3 font-semibold text-white transition hover:bg-white/10"
+                className="rounded-xl border border-[#2e0003]/15 bg-white px-6 py-3.5 font-semibold text-[#2e0003] transition hover:border-[#2e0003]/30"
               >
-                Explore Spices
+                Our Story
               </button>
-
             </div>
-
           </motion.div>
 
+          {/* Right Image */}
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7 }}
+            className="relative hidden lg:block"
+          >
+            <div className="relative ml-auto h-[500px] max-w-[520px] overflow-hidden rounded-[36px]">
+              <img
+                src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=85"
+                alt="Traditional Indian spices"
+                className="h-full w-full object-cover"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2e0003]/40 via-transparent to-transparent" />
+
+              <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/20 bg-white/90 p-5 backdrop-blur-md">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Desi Zaika
+                </p>
+
+                <p className="mt-1 text-lg font-semibold text-[#2e0003]">
+                  Flavours that feel like home.
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          animate={{ y: [0, 7, 0] }}
-          transition={{
-            duration: 1.8,
-            repeat: Infinity,
-          }}
-          className="absolute bottom-7 left-1/2 -translate-x-1/2 text-white/60"
-        >
-          <ChevronDown size={22} />
-        </motion.div>
-
       </section>
 
+      {/* ================= FEATURES ================= */}
 
-      {/* =====================================
-          WHY CHOOSE
-      ===================================== */}
-
-      <section className="bg-white py-20">
-
+      <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
 
-          <div className="mb-12 max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <Leaf className="mx-auto mb-4 h-10 w-10 text-[#2e0003]" />
 
-            <p className="mb-3 text-xs font-semibold tracking-[0.25em] text-[#7d6d62]">
-              WHY DESI ZAIKA
-            </p>
+              <h3 className="mb-2 font-semibold text-[#2e0003]">
+                Natural Ingredients
+              </h3>
 
-            <h2 className="text-4xl font-bold leading-tight text-[#2e0003] md:text-5xl">
-              Simple ingredients.
-              <br />
-              <span className="italic font-normal">
-                Honest flavour.
-              </span>
-            </h2>
+              <p className="text-sm text-gray-600">
+                Selected with care
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.08 }}
+              className="text-center"
+            >
+              <ShieldCheck className="mx-auto mb-4 h-10 w-10 text-[#2e0003]" />
+
+              <h3 className="mb-2 font-semibold text-[#2e0003]">
+                Quality First
+              </h3>
+
+              <p className="text-sm text-gray-600">
+                Made for your kitchen
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.16 }}
+              className="text-center"
+            >
+              <Truck className="mx-auto mb-4 h-10 w-10 text-[#2e0003]" />
+
+              <h3 className="mb-2 font-semibold text-[#2e0003]">
+                Reliable Delivery
+              </h3>
+
+              <p className="text-sm text-gray-600">
+                Packed with care
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.24 }}
+              className="text-center"
+            >
+              <Heart className="mx-auto mb-4 h-10 w-10 text-[#2e0003]" />
+
+              <h3 className="mb-2 font-semibold text-[#2e0003]">
+                Made With Love
+              </h3>
+
+              <p className="text-sm text-gray-600">
+                From us to you
+              </p>
+            </motion.div>
 
           </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-
-            {WHY_CHOOSE.map((item, index) => {
-
-              const Icon = item.icon
-
-              return (
-                <motion.div
-                  key={item.title}
-                  initial={{
-                    opacity: 0,
-                    y: 25,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  viewport={{
-                    once: true,
-                    amount: 0.3,
-                  }}
-                  transition={{
-                    duration: 0.55,
-                    delay: index * 0.08,
-                  }}
-                  whileHover={{
-                    y: -5,
-                  }}
-                  className="group rounded-2xl border border-[#e4dcd2] bg-[#faf8f4] p-7 transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(46,0,3,0.08)]"
-                >
-
-                  <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-xl bg-[#2e0003] text-[#D8cfbc] transition-transform duration-300 group-hover:scale-105">
-                    <Icon size={21} strokeWidth={1.8} />
-                  </div>
-
-                  <h3 className="mb-2 text-lg font-semibold text-[#2e0003]">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-sm leading-6 text-gray-600">
-                    {item.text}
-                  </p>
-
-                  <div className="mt-6 h-px w-8 bg-[#2e0003]/25 transition-all duration-300 group-hover:w-14" />
-
-                </motion.div>
-              )
-            })}
-
-          </div>
-
         </div>
-
       </section>
 
+      {/* ================= PRODUCTS ================= */}
 
-      {/* =====================================
-          PRODUCTS
-      ===================================== */}
-
-      <section className="py-20">
-
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-6">
 
-          <div className="mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+          <div className="mb-12 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
 
             <div>
-
-              <p className="mb-2 text-xs font-semibold tracking-[0.22em] text-[#7d6d62]">
+              <p className="mb-2 text-xs font-semibold tracking-[0.18em] text-gray-500">
                 EXPLORE OUR COLLECTION
               </p>
 
-              <h2 className="text-4xl font-bold leading-tight text-[#2e0003] md:text-5xl">
+              <h2 className="text-4xl font-bold text-[#2e0003]">
                 Made for every
                 <br />
-                <span className="italic font-normal">
+
+                <span className="font-serif italic font-normal">
                   Indian kitchen.
                 </span>
               </h2>
-
             </div>
 
             <button
+              type="button"
               onClick={() => navigate('/products')}
-              className="flex items-center gap-2 font-semibold text-[#2e0003] transition hover:gap-3"
+              className="flex items-center gap-2 font-semibold text-[#2e0003] hover:underline"
             >
               View all products
               <ArrowRight size={19} />
@@ -478,302 +326,196 @@ const Home = () => {
           </div>
 
           {loading ? (
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="h-80 animate-pulse rounded-2xl bg-white"
-                />
-              ))}
-
+            <div className="py-14 text-center text-gray-500">
+              Loading products...
             </div>
-
           ) : products.length > 0 ? (
-
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
               {products.map((product) => (
                 <ProductCard
                   key={product._id}
-                  product={{
-                    ...product,
-                    category: getCategoryName(product.category),
-                  }}
+                  product={product}
                 />
               ))}
-
             </div>
-
           ) : (
-
-            <div className="rounded-2xl border border-[#ddd2c4] bg-white p-12 text-center">
-              <Utensils
-                className="mx-auto mb-4 text-[#2e0003]/40"
-                size={35}
-              />
-
-              <p className="text-gray-500">
-                Products coming soon.
-              </p>
+            <div className="rounded-2xl bg-white py-14 text-center text-gray-500">
+              No products available yet.
             </div>
-
           )}
 
         </div>
-
       </section>
 
+      {/* ================= OUR STORY ================= */}
 
-      {/* =====================================
-          SHOP BY CATEGORY
-      ===================================== */}
-
-      <section className="bg-white py-20">
-
+      <section className="bg-[#f7f3eb] py-20">
         <div className="mx-auto max-w-7xl px-6">
 
-          <div className="mb-12">
-
-            <p className="mb-2 text-xs font-semibold tracking-[0.22em] text-[#7d6d62]">
-              EXPLORE
-            </p>
-
-            <h2 className="text-4xl font-bold text-[#2e0003] md:text-5xl">
-              Shop by Category
-            </h2>
-
-          </div>
-
-          {categories.length > 0 ? (
-
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-              {categories.map((category, index) => {
-
-                const categoryName = category.name
-                const image =
-                  CATEGORY_IMAGES[categoryName] ||
-                  CATEGORY_IMAGES.Spices
-
-                return (
-                  <motion.button
-                    key={category._id || categoryName}
-                    onClick={() =>
-                      navigate(
-                        `/products?category=${encodeURIComponent(
-                          categoryName
-                        )}`
-                      )
-                    }
-                    initial={{
-                      opacity: 0,
-                      y: 25,
-                    }}
-                    whileInView={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    viewport={{
-                      once: true,
-                      amount: 0.2,
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.06,
-                    }}
-                    whileHover={{
-                      y: -5,
-                    }}
-                    className="group relative h-64 overflow-hidden rounded-[24px] text-left"
-                  >
-
-                    <img
-                      src={image}
-                      alt={categoryName}
-                      className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                      loading="lazy"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#2e0003]/90 via-[#2e0003]/20 to-transparent" />
-
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-
-                      <div className="flex items-end justify-between">
-
-                        <div>
-                          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-white/65">
-                            Explore
-                          </p>
-
-                          <h3 className="text-2xl font-bold text-white">
-                            {categoryName}
-                          </h3>
-                        </div>
-
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition group-hover:bg-white group-hover:text-[#2e0003]">
-                          <ArrowRight size={18} />
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </motion.button>
-                )
-              })}
-
-            </div>
-
-          ) : (
-
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-              {Object.keys(CATEGORY_IMAGES).map((name) => (
-                <div
-                  key={name}
-                  className="h-64 animate-pulse rounded-[24px] bg-[#f0ebe0]"
-                />
-              ))}
-
-            </div>
-
-          )}
-
-        </div>
-
-      </section>
-
-
-      {/* =====================================
-          OUR STORY - SCROLL STACK
-      ===================================== */}
-
-      <section className="bg-[#f0ebe0] py-24">
-
-        <div className="mx-auto max-w-7xl px-6">
-
-          <div className="mb-16 max-w-2xl">
-
-            <p className="mb-3 text-xs font-semibold tracking-[0.25em] text-[#7d6d62]">
+          <div className="mb-14 max-w-2xl">
+            <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-gray-500">
               OUR STORY
             </p>
 
             <h2 className="text-4xl font-bold leading-tight text-[#2e0003] md:text-5xl">
-              More than ingredients.
+              Authentic flavours,
               <br />
-              <span className="italic font-normal">
-                It's a feeling.
+
+              <span className="font-serif italic font-normal">
+                thoughtfully chosen.
               </span>
             </h2>
 
-            <p className="mt-5 max-w-xl leading-7 text-[#665b55]">
-              Scroll through our story and discover what makes Desi Zaika
-              special.
+            <p className="mt-5 leading-7 text-gray-600">
+              Desi Zaika is about keeping everyday Indian cooking simple,
+              authentic and full of flavour.
             </p>
-
           </div>
 
-          {/* STACK */}
-          <div className="relative">
+          <div className="relative mx-auto max-w-5xl">
 
-            {STORY_CARDS.map((card, index) => (
-              <StoryCard
+            {storyCards.map((card, index) => (
+              <motion.div
                 key={card.number}
-                card={card}
-                index={index}
-              />
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45 }}
+                className="sticky mb-6"
+                style={{
+                  top: `${100 + index * 16}px`,
+                  zIndex: index + 1,
+                }}
+              >
+                <div className="grid min-h-[220px] items-center gap-8 rounded-[28px] border border-[#2e0003]/10 bg-white p-8 shadow-[0_20px_60px_rgba(46,0,3,0.07)] md:grid-cols-[130px_1fr] md:p-10">
+
+                  <div>
+                    <span className="font-serif text-5xl italic text-[#2e0003]/20">
+                      {card.number}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-semibold text-[#2e0003] md:text-3xl">
+                      {card.title}
+                    </h3>
+
+                    <p className="mt-4 max-w-2xl leading-7 text-gray-600">
+                      {card.description}
+                    </p>
+                  </div>
+
+                </div>
+              </motion.div>
             ))}
 
           </div>
-
-          {/* Space after sticky stack */}
-          <div className="h-[35vh]" />
-
         </div>
-
       </section>
 
+      {/* ================= CATEGORIES ================= */}
 
-      {/* =====================================
-          TESTIMONIALS
-      ===================================== */}
-
-      <section className="bg-white py-20">
-
+      <section className="bg-white py-16">
         <div className="mx-auto max-w-7xl px-6">
 
-          <div className="mb-12">
+          <h2 className="mb-12 text-4xl font-bold text-[#2e0003]">
+            Shop by Category
+          </h2>
 
-            <p className="mb-2 text-xs font-semibold tracking-[0.22em] text-[#7d6d62]">
-              FROM OUR CUSTOMERS
-            </p>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
-            <h2 className="text-4xl font-bold text-[#2e0003] md:text-5xl">
-              What Our Customers Say
-            </h2>
+            {[
+              {
+                name: 'Spices',
+                emoji: '🌶️',
+              },
+              {
+                name: 'Rice',
+                emoji: '🌾',
+              },
+              {
+                name: 'Herbs',
+                emoji: '🌿',
+              },
+              {
+                name: 'Tea',
+                emoji: '☕',
+              },
+            ].map((category) => (
+              <motion.button
+                type="button"
+                key={category.name}
+                onClick={() =>
+                  navigate(
+                    `/products?category=${encodeURIComponent(
+                      category.name
+                    )}`
+                  )
+                }
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="group relative h-48 overflow-hidden rounded-2xl bg-[#2e0003] text-white"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#2e0003] to-[#4a0a10]" />
+
+                <div className="relative flex h-full flex-col items-center justify-center">
+
+                  <span className="mb-4 text-5xl transition-transform duration-300 group-hover:scale-110">
+                    {category.emoji}
+                  </span>
+
+                  <h3 className="text-2xl font-bold">
+                    {category.name}
+                  </h3>
+
+                </div>
+              </motion.button>
+            ))}
 
           </div>
+        </div>
+      </section>
+
+      {/* ================= TESTIMONIALS ================= */}
+
+      <section className="bg-[#f0ebe0] py-16">
+        <div className="mx-auto max-w-7xl px-6">
+
+          <h2 className="mb-12 text-4xl font-bold text-[#2e0003]">
+            What Our Customers Say
+          </h2>
 
           <TestimonialCarousel />
 
         </div>
-
       </section>
 
+      {/* ================= CTA ================= */}
 
-      {/* =====================================
-          FINAL CTA
-      ===================================== */}
+      <section className="bg-[#2e0003] py-16 text-white">
+        <div className="mx-auto max-w-4xl px-6 text-center">
 
-      <section className="relative overflow-hidden bg-[#2e0003] py-24 text-white">
-
-        <div className="absolute -right-32 -top-32 h-80 w-80 rounded-full bg-[#D8cfbc]/10 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#D8cfbc]/10 blur-3xl" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          viewport={{
-            once: true,
-          }}
-          className="relative mx-auto max-w-4xl px-6 text-center"
-        >
-
-          <p className="mb-4 text-xs font-semibold tracking-[0.25em] text-[#D8cfbc]/70">
-            DESI ZAIKA
-          </p>
-
-          <h2 className="text-4xl font-bold leading-tight md:text-5xl">
-            Bring authentic flavour
-            <br />
-            <span className="italic font-normal">
-              to your kitchen.
-            </span>
+          <h2 className="mb-6 text-4xl font-bold">
+            Ready to elevate your cooking?
           </h2>
 
-          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-gray-300">
-            Discover spices, rice, tea, herbs, oils and grains made
-            for everyday Indian cooking.
+          <p className="mb-8 text-lg text-gray-200">
+            Discover authentic ingredients made for everyday Indian
+            kitchens.
           </p>
 
           <button
+            type="button"
             onClick={() => navigate('/products')}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#D8cfbc] px-8 py-4 font-semibold text-[#2e0003] transition hover:-translate-y-1 hover:bg-white"
+            className="rounded-xl bg-[#D8cfbc] px-8 py-4 text-lg font-semibold text-[#2e0003] transition hover:bg-[#e7dfcf]"
           >
-            Start Shopping
-            <ArrowRight size={19} />
+            Start Shopping Now
           </button>
 
-        </motion.div>
-
+        </div>
       </section>
 
-    </div>
+    </main>
   )
 }
 

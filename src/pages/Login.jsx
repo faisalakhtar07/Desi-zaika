@@ -7,45 +7,71 @@ import api from '../services/api'
 export default function Login() {
   const navigate = useNavigate()
   const { setToken, setUser } = useAuthStore()
+
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
   const [formData, setFormData] = useState({
     phone: '',
-    password: ''
+    password: '',
   })
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }))
+
     setError('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+
     setError('')
+
+    const phone = formData.phone.trim()
+
+    if (!/^\d{10}$/.test(phone)) {
+      setError('Phone number must be exactly 10 digits')
+      return
+    }
+
+    if (!formData.password) {
+      setError('Please enter your password')
+      return
+    }
+
+    setLoading(true)
 
     try {
       const response = await api.post('/auth/login', {
-        phone: formData.phone,
-        password: formData.password
+        phone,
+        password: formData.password,
       })
 
-      if (response.data?.token) {
-        setToken(response.data.token)
-        if (response.data.user) {
-          setUser(response.data.user)
+      // api.js returns response.data directly
+      if (response?.token) {
+        setToken(response.token)
+
+        if (response.user) {
+          setUser(response.user)
         }
-        navigate('/')
+
+        navigate('/', { replace: true })
       } else {
-        setError('Login failed. Please try again.')
+        setError(response?.message || 'Login failed. Please try again.')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.')
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Login failed. Please check your credentials.'
+
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -55,10 +81,17 @@ export default function Login() {
     <div className="min-h-screen bg-[#f0ebe0] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-[#2e0003] text-center mb-2">Desi Zaika</h1>
-          <p className="text-gray-600 text-center mb-8">Premium Indian Spices</p>
+          <h1 className="text-3xl font-bold text-[#2e0003] text-center mb-2">
+            Desi Zaika
+          </h1>
 
-          <h2 className="text-2xl font-bold text-[#2e0003] mb-6">Login</h2>
+          <p className="text-gray-600 text-center mb-8">
+            Premium Indian Spices
+          </p>
+
+          <h2 className="text-2xl font-bold text-[#2e0003] mb-6">
+            Login
+          </h2>
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -68,21 +101,29 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number
+              </label>
+
               <input
                 type="tel"
                 name="phone"
                 placeholder="10 digit mobile number"
                 value={formData.phone}
                 onChange={handleChange}
-                maxLength="10"
+                maxLength={10}
+                inputMode="numeric"
+                autoComplete="tel"
                 required
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Password
+              </label>
+
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -90,15 +131,22 @@ export default function Login() {
                   placeholder="Enter password"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="current-password"
                   required
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
+                  className="w-full px-4 py-2 pr-12 border-2 border-gray-300 rounded-lg focus:border-[#2e0003] focus:outline-none"
                 />
+
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
@@ -106,7 +154,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#2e0003] text-[#D8cfbc] font-bold py-2 rounded-lg hover:bg-[#4a0a10] transition disabled:opacity-50"
+              className="w-full bg-[#2e0003] text-[#D8cfbc] font-bold py-2 rounded-lg hover:bg-[#4a0a10] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -114,7 +162,10 @@ export default function Login() {
 
           <p className="text-center text-gray-600 mt-6">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-[#2e0003] font-bold hover:underline">
+            <Link
+              to="/signup"
+              className="text-[#2e0003] font-bold hover:underline"
+            >
               Sign Up
             </Link>
           </p>
