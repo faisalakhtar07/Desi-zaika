@@ -45,7 +45,7 @@ const STORY = [
   { no: '01', title: 'From Nature', text: 'Every flavour begins with an ingredient. We celebrate the natural colours, textures and aromas that make Indian food special.', image: 'https://images.unsplash.com/photo-1515586000433-45406d8e6662?auto=format&fit=crop&w=1100&q=90' },
   { no: '02', title: 'With Care', text: 'From whole spices to aromatic blends, every ingredient deserves care so its character can reach your kitchen.', image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1100&q=90' },
   { no: '03', title: 'To Your Kitchen', text: 'The final destination is simple: your kitchen, your recipes and the people around your table.', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=90' },
-  { no: '04', title: 'For a Better You', text: 'Better ingredients help you make food you feel good about sharing every day.', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=90' },
+  { no: '04', title: 'For a Better You', text: 'Better ingredients help you make food you feel good about sharing every day.', image: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1100&q=90' },
 ]
 
 function Image({ src, alt, className = '', ...props }) {
@@ -254,39 +254,41 @@ export default function Home() {
 
           <div className="mx-auto max-w-5xl">
             {STORY.map((card, index) => (
-              <article
+              <div
                 key={card.no}
-                className="sticky mb-8 overflow-hidden rounded-[28px] border border-[#e4d9c8] bg-[#2d1715] shadow-[0_24px_70px_rgba(45,23,21,.20)] md:mb-10 md:rounded-[36px]"
-                style={{ top: `${86 + index * 18}px`, zIndex: index + 1 }}
+                className="relative h-[82vh] min-h-[540px]"
+                style={{ zIndex: index + 1 }}
               >
-                <div className="relative h-[70vh] min-h-[430px] max-h-[650px] w-full">
-                  <Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
+                <article className="sticky top-20 h-[72vh] min-h-[460px] overflow-hidden rounded-[28px] border border-[#e4d9c8] bg-[#2d1715] shadow-[0_24px_70px_rgba(45,23,21,.20)] md:top-24 md:h-[70vh] md:rounded-[36px]">
+                  <div className="relative h-full w-full">
+                    <Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
 
-                  <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-9 md:p-12">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold tracking-[.22em] text-white/65">{card.no}</span>
-                      <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.18em] backdrop-blur-sm">Our Story</span>
-                    </div>
+                    <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-9 md:p-12">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold tracking-[.22em] text-white/65">{card.no}</span>
+                        <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.18em] backdrop-blur-sm">Our Story</span>
+                      </div>
 
-                    <div className="max-w-2xl">
-                      <h3 className="font-serif text-4xl leading-none sm:text-5xl md:text-6xl">{card.title}</h3>
-                      <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">{card.text}</p>
-                      <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-white/55">
-                        <span className="h-px w-10 bg-white/50" />
-                        Scroll to continue
+                      <div className="max-w-2xl">
+                        <h3 className="font-serif text-4xl leading-none sm:text-5xl md:text-6xl">{card.title}</h3>
+                        <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">{card.text}</p>
+                        <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-white/55">
+                          <span className="h-px w-10 bg-white/50" />
+                          Scroll to continue
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </article>
+                </article>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* REAL TASTE HOME */}
-      <section className="relative min-h-[520px] overflow-hidden"><Image src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=2200&q=90" alt="Indian food and spices" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/55" /><div className="relative mx-auto flex min-h-[520px] max-w-7xl items-center justify-between gap-8 px-6 text-white md:px-10"><div className="max-w-xl"><p className="text-[10px] font-bold uppercase tracking-[.3em] text-white/70">Desi Zaika</p><h2 className="mt-3 font-serif text-5xl leading-[.95] sm:text-6xl">Bringing Real Taste<br />Home</h2><p className="mt-5 text-sm leading-7 text-white/70">Traditional flavours. Modern convenience. Everything you need to make everyday food feel special.</p><button onClick={() => navigate('/products')} className="mt-7 rounded-full bg-[#8e1c27] px-6 py-3 text-xs font-semibold">Shop Now </button></div><Logo dark className="hidden h-24 w-48 md:block" /></div></section>
+      <section className="relative min-h-[520px] overflow-hidden"><Image src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=2200&q=90" alt="Indian food and spices" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-black/55" /><div className="relative mx-auto flex min-h-[520px] max-w-7xl items-center justify-between gap-8 px-6 text-white md:px-10"><div className="max-w-xl"><p className="text-[10px] font-bold uppercase tracking-[.3em] text-white/70">Desi Zaika</p><h2 className="mt-3 font-serif text-5xl leading-[.95] sm:text-6xl">Bringing Real Taste<br />Home</h2><p className="mt-5 text-sm leading-7 text-white/70">Traditional flavours. Modern convenience. Everything you need to make everyday food feel special.</p><button onClick={() => navigate('/products')} className="mt-7 rounded-full bg-[#8e1c27] px-6 py-3 text-xs font-semibold">Shop Now </button></div><Logo dark className="hidden h-24 w-48 md:block" /></div></section>
 
       {/* FOOTER */}
       <footer id="contact" className="bg-[#f7f1e7] px-5 py-12 md:px-10 md:py-16"><div className="mx-auto max-w-7xl"><div className="flex flex-col items-center justify-between gap-8 border-b border-[#ddd0bf] pb-10 md:flex-row"><Logo className="h-16 w-44" /><div className="flex flex-wrap justify-center gap-6 text-xs text-[#5d4b45]"><button onClick={() => navigate('/products')}>Shop</button><a href="#categories">Categories</a><a href="#story">About</a><a href="#contact">Contact</a></div><div className="flex gap-3 text-[#5d4b45]"><span>f</span><span>◎</span><span>▶</span><span>p</span></div></div><div className="flex flex-col justify-between gap-3 pt-6 text-[10px] text-[#85736b] sm:flex-row"><span>© 2026 Desi Zaika. All rights reserved.</span><div className="flex gap-5"><span>Privacy Policy</span><span>Terms & Conditions</span></div></div></div></footer>
