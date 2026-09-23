@@ -253,36 +253,63 @@ export default function Home() {
           </div>
 
           <div className="mx-auto max-w-5xl">
-            {STORY.map((card, index) => (
-              <div
-                key={card.no}
-                className="relative h-[82vh] min-h-[540px]"
-                style={{ zIndex: index + 1 }}
-              >
-                <article className="sticky top-20 h-[72vh] min-h-[460px] overflow-hidden rounded-[28px] border border-[#e4d9c8] bg-[#2d1715] shadow-[0_24px_70px_rgba(45,23,21,.20)] md:top-24 md:h-[70vh] md:rounded-[36px]">
-                  <div className="relative h-full w-full">
-                    <Image src={card.image} alt={card.title} className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
+           {STORY.map((card, index) => (
+  <div
+    key={card.no}
+    className="relative h-[100vh]"
+    style={{
+      zIndex: index + 1,
+    }}
+  >
+    <article
+      className="
+        sticky top-24
+        h-[70vh]
+        min-h-[480px]
+        overflow-hidden
+        rounded-[30px]
+        border border-[#e4d9c8]
+        bg-[#2d1715]
+        shadow-[0_25px_70px_rgba(45,23,21,.20)]
+      "
+    >
+      <div className="relative h-full w-full">
 
-                    <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-9 md:p-12">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold tracking-[.22em] text-white/65">{card.no}</span>
-                        <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[.18em] backdrop-blur-sm">Our Story</span>
-                      </div>
+        <Image
+          src={card.image}
+          alt={card.title}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
 
-                      <div className="max-w-2xl">
-                        <h3 className="font-serif text-4xl leading-none sm:text-5xl md:text-6xl">{card.title}</h3>
-                        <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">{card.text}</p>
-                        <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-white/55">
-                          <span className="h-px w-10 bg-white/50" />
-                          Scroll to continue
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10" />
+
+        <div className="relative flex h-full flex-col justify-between p-6 text-white sm:p-9 md:p-12">
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold tracking-[.22em] text-white/70">
+              {card.no}
+            </span>
+
+            <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] uppercase tracking-[.18em] backdrop-blur">
+              Our Story
+            </span>
+          </div>
+
+          <div className="max-w-2xl">
+            <h3 className="font-serif text-4xl leading-none sm:text-5xl md:text-6xl">
+              {card.title}
+            </h3>
+
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/80 sm:text-base">
+              {card.text}
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </article>
+  </div>
+))}
           </div>
         </div>
       </section>
