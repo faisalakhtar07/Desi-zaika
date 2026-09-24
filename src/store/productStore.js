@@ -1,38 +1,69 @@
 import { create } from 'zustand'
+import { productAPI } from '../services/api'
 
-export const useProductStore = create((set, get) => ({
+const useProductStore = create((set) => ({
   products: [],
-  filteredProducts: [],
+  featured: [],
+  bestSellers: [],
   loading: false,
   error: null,
-  searchTerm: '',
 
-  setProducts: (products) => set({ products }),
-  
-  setFilteredProducts: (products) => set({ filteredProducts: products }),
-
-  setLoading: (loading) => set({ loading }),
-  
-  setError: (error) => set({ error }),
-
-  setSearchTerm: (term) => {
-    set({ searchTerm: term })
-    const state = get()
-    const filtered = state.products.filter(p =>
-      p.name.toLowerCase().includes(term.toLowerCase())
-    )
-    set({ filteredProducts: filtered })
+  getProducts: async (params = {}) => {
+    set({ loading: true, error: null })
+    try {
+      const response = await productAPI.getAll(params)
+      set({ products: response.data.products, loading: false })
+      return response.data
+    } catch (error) {
+      set({ error: error.message, loading: false })
+      throw error
+    }
   },
 
-  addProduct: (product) => set((state) => ({
-    products: [...state.products, product]
-  })),
+  getProductById: async (id) => {
+    set({ loading: true })
+    try {
+      const response = await productAPI.getById(id)
+      set({ loading: false })
+      return response.data.product
+    } catch (error) {
+      set({ error: error.message, loading: false })
+      throw error
+    }
+  },
 
-  updateProduct: (id, updatedProduct) => set((state) => ({
-    products: state.products.map(p => p._id === id ? updatedProduct : p)
-  })),
+  getFeatured: async () => {
+    try {
+      const response = await productAPI.getFeatured()
+      set({ featured: response.data.products })
+      return response.data.products
+    } catch (error) {
+      set({ error: error.message })
+      throw error
+    }
+  },
 
-  removeProduct: (id) => set((state) => ({
-    products: state.products.filter(p => p._id !== id)
-  }))
+  getBestSellers: async () => {
+    try {
+      const response = await productAPI.getBestSellers()
+      set({ bestSellers: response.data.products })
+      return response.data.products
+    } catch (error) {
+      set({ error: error.message })
+      throw error
+    }
+  },
+
+  search: async (query) => {
+    if (!query) return []
+    try {
+      const response = await productAPI.search(query)
+      return response.data.products
+    } catch (error) {
+      set({ error: error.message })
+      return []
+    }
+  }
 }))
+
+export default useProductStore

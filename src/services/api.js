@@ -1,80 +1,81 @@
 import axios from 'axios'
-import { useAuthStore } from '../store/authStore'
 
-const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    'https://desi-zaika-backend.onrender.com/api',
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
+const apiClient = axios.create({
+  baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
+  withCredentials: true
 })
 
-// =====================================================
-// REQUEST INTERCEPTOR
-// Add JWT token to authenticated requests
-// =====================================================
+// Add token to requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
-api.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token
-
-    if (token) {
-      config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${token}`
-    }
-
-    return config
-  },
+// Handle response errors
+apiClient.interceptors.response.use(
+  (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
     return Promise.reject(error)
   }
 )
 
-// =====================================================
-// RESPONSE INTERCEPTOR
-// Return response.data directly
-// =====================================================
-
-api.interceptors.response.use(
-  (response) => {
-    return response.data
+export const authAPI = {
+  signup: (data) => apiClient.post('/auth/signup', data),
+  login: (data) => apiClient.post('/auth/login', data),
+  logout: () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
   },
+  getProfile: () => apiClient.get('/auth/profile'),
+  changePassword: (data) => apiClient.post('/auth/change-password', data),
+  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => apiClient.post('/auth/reset-password', data)
+}
 
-  (error) => {
-    const status = error.response?.status
-    const requestUrl = error.config?.url || ''
+export const productAPI = {
+  getAll: (params) => apiClient.get('/products', { params }),
+  getById: (id) => apiClient.get(`/products/${id}`),
+  getFeatured: () => apiClient.get('/products/featured'),
+  getBestSellers: () => apiClient.get('/products/bestsellers'),
+  getNewArrivals: () => apiClient.get('/products/new'),
+  search: (query) => apiClient.get('/products/search', { params: { q: query } })
+}
 
-    /*
-      Do NOT logout on login/signup 401.
+export const cartAPI = {
+  getCart: () => apiClient.get('/cart'),
+  addItem: (data) => apiClient.post('/cart/add', data),
+  updateItem: (id, data) => apiClient.put(`/cart/item/${id}`, data),
+  removeItem: (id) => apiClient.delete(`/cart/item/${id}`),
+  clearCart: () => apiClient.delete('/cart'),
+  getCount: () => apiClient.get('/cart/count')
+}
 
-      Backend returns 401 for:
-      - Wrong login password
-      - Invalid credentials
+export const orderAPI = {
+  place: (data) => apiClient.post('/orders/place', data),
+  getAll: (params) => apiClient.get('/orders', { params }),
+  getById: (id) => apiClient.get(`/orders/${id}`),
+  track: (orderId) => apiClient.get(`/orders/track/${orderId}`),
+  cancel: (id, data) => apiClient.post(`/orders/${id}/cancel`, data)
+}
 
-      Those errors should be shown on the Login page.
+export const userAPI = {
+  getAddresses: () => apiClient.get('/users/addresses'),
+  addAddress: (data) => apiClient.post('/users/addresses', data),
+  updateAddress: (id, data) => apiClient.put(`/users/addresses/${id}`, data),
+  deleteAddress: (id) => apiClient.delete(`/users/addresses/${id}`)
+}
 
-      Logout only when an already-authenticated request
-      receives 401.
-    */
-
-    const isAuthRequest =
-      requestUrl.includes('/auth/login') ||
-      requestUrl.includes('/auth/signup') ||
-      requestUrl.includes('/auth/admin/login') ||
-      requestUrl.includes('/auth/delivery-login')
-
-    if (status === 401 && !isAuthRequest) {
-      useAuthStore.getState().logout()
-
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
-    }
-
-    return Promise.reject(error)
-  }
-)
-
-export default api
+export default apiClient

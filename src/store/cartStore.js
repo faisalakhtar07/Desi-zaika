@@ -1,55 +1,77 @@
 import { create } from 'zustand'
+import { cartAPI } from '../services/api'
 
-export const useCartStore = create((set, get) => ({
-  cart: JSON.parse(localStorage.getItem('cart')) || [],
+const useCartStore = create((set, get) => ({
+  items: [],
+  subtotal: 0,
+  loading: false,
+  error: null,
 
-  addToCart: (item) => set((state) => {
-    const existing = state.cart.find(i => i.productId === item.productId)
-    let newCart
-
-    if (existing) {
-      newCart = state.cart.map(i =>
-        i.productId === item.productId 
-          ? { ...i, quantity: i.quantity + (item.quantity || 1) } 
-          : i
-      )
-    } else {
-      newCart = [...state.cart, { ...item, quantity: item.quantity || 1 }]
+  getCart: async () => {
+    set({ loading: true })
+    try {
+      const response = await cartAPI.getCart()
+      set({
+        items: response.data.cart.items,
+        subtotal: response.data.cart.subtotal,
+        loading: false
+      })
+      return response.data.cart
+    } catch (error) {
+      set({ error: error.message, loading: false })
+      throw error
     }
+  },
 
-    localStorage.setItem('cart', JSON.stringify(newCart))
-    return { cart: newCart }
-  }),
-
-  removeFromCart: (productId) => set((state) => {
-    const newCart = state.cart.filter(i => i.productId !== productId)
-    localStorage.setItem('cart', JSON.stringify(newCart))
-    return { cart: newCart }
-  }),
-
-  updateQuantity: (productId, quantity) => set((state) => {
-    if (quantity <= 0) {
-      return get().removeFromCart(productId)
+  addItem: async (productId, quantity = 1) => {
+    set({ loading: true })
+    try {
+      await cartAPI.addItem({ productId, quantity })
+      await get().getCart()
+      return true
+    } catch (error) {
+      set({ error: error.response?.data?.message || error.message, loading: false })
+      throw error
     }
+  },
 
-    const newCart = state.cart.map(i =>
-      i.productId === productId ? { ...i, quantity } : i
-    )
+  removeItem: async (itemId) => {
+    set({ loading: true })
+    try {
+      await cartAPI.removeItem(itemId)
+      await get().getCart()
+      return true
+    } catch (error) {
+      set({ error: error.message, loading: false })
+      throw error
+    }
+  },
 
-    localStorage.setItem('cart', JSON.stringify(newCart))
-    return { cart: newCart }
-  }),
+  updateItem: async (itemId, quantity) => {
+    try {
+      await cartAPI.updateItem(itemId, { quantity })
+      await get().getCart()
+      return true
+    } catch (error) {
+      set({ error: error.message })
+      throw error
+    }
+  },
 
-  getTotal: () => {
-    return get().cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  clearCart: async () => {
+    try {
+      await cartAPI.clearCart()
+      set({ items: [], subtotal: 0 })
+      return true
+    } catch (error) {
+      set({ error: error.message })
+      throw error
+    }
   },
 
   getItemCount: () => {
-    return get().cart.reduce((sum, item) => sum + item.quantity, 0)
-  },
-
-  clearCart: () => {
-    localStorage.removeItem('cart')
-    set({ cart: [] })
+    return get().items.length
   }
 }))
+
+export default useCartStore
