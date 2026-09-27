@@ -1,69 +1,68 @@
-import { create } from 'zustand'
-import { productAPI } from '../services/api'
+import { create } from 'zustand';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const useProductStore = create((set) => ({
   products: [],
   featured: [],
   bestSellers: [],
+  newArrivals: [],
   loading: false,
   error: null,
 
-  getProducts: async (params = {}) => {
-    set({ loading: true, error: null })
+  getProducts: async (page = 1, limit = 12, filters = {}) => {
+    set({ loading: true });
     try {
-      const response = await productAPI.getAll(params)
-      set({ products: response.data.products, loading: false })
-      return response.data
+      const params = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      });
+      const response = await axios.get(`${API_URL}/products?${params}`);
+      set({ products: response.data.products, loading: false });
+      return response.data;
     } catch (error) {
-      set({ error: error.message, loading: false })
-      throw error
-    }
-  },
-
-  getProductById: async (id) => {
-    set({ loading: true })
-    try {
-      const response = await productAPI.getById(id)
-      set({ loading: false })
-      return response.data.product
-    } catch (error) {
-      set({ error: error.message, loading: false })
-      throw error
+      set({ error: error.message, loading: false });
     }
   },
 
   getFeatured: async () => {
     try {
-      const response = await productAPI.getFeatured()
-      set({ featured: response.data.products })
-      return response.data.products
+      const response = await axios.get(`${API_URL}/products/featured`);
+      set({ featured: response.data.products });
     } catch (error) {
-      set({ error: error.message })
-      throw error
+      set({ error: error.message });
     }
   },
 
   getBestSellers: async () => {
     try {
-      const response = await productAPI.getBestSellers()
-      set({ bestSellers: response.data.products })
-      return response.data.products
+      const response = await axios.get(`${API_URL}/products/bestsellers`);
+      set({ bestSellers: response.data.products });
     } catch (error) {
-      set({ error: error.message })
-      throw error
+      set({ error: error.message });
     }
   },
 
-  search: async (query) => {
-    if (!query) return []
+  getNewArrivals: async () => {
     try {
-      const response = await productAPI.search(query)
-      return response.data.products
+      const response = await axios.get(`${API_URL}/products/new-arrivals`);
+      set({ newArrivals: response.data.products });
     } catch (error) {
-      set({ error: error.message })
-      return []
+      set({ error: error.message });
+    }
+  },
+
+  searchProducts: async (query) => {
+    set({ loading: true });
+    try {
+      const response = await axios.get(`${API_URL}/products/search/${query}`);
+      set({ products: response.data.products, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
     }
   }
-}))
+}));
 
-export default useProductStore
+export default useProductStore;

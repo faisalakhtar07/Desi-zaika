@@ -1,33 +1,41 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useWishlistStore = create((set, get) => ({
-  items: JSON.parse(localStorage.getItem('wishlist') || '[]'),
-  
-  addItem: (product) => {
-    const items = get().items
-    if (!items.find(p => p.id === product.id)) {
-      const newItems = [...items, product]
-      localStorage.setItem('wishlist', JSON.stringify(newItems))
-      set({ items: newItems })
-      return true
-    }
-    return false
-  },
+const useWishlistStore = create(
+  persist(
+    (set, get) => ({
+      items: [],
 
-  removeItem: (productId) => {
-    const newItems = get().items.filter(p => p.id !== productId)
-    localStorage.setItem('wishlist', JSON.stringify(newItems))
-    set({ items: newItems })
-  },
+      addToWishlist: (product) => {
+        const exists = get().items.find((item) => item.id === product.id);
+        if (!exists) {
+          set({ items: [...get().items, product] });
+        }
+      },
 
-  isInWishlist: (productId) => {
-    return get().items.some(p => p.id === productId)
-  },
+      removeFromWishlist: (productId) => {
+        set({ items: get().items.filter((item) => item.id !== productId) });
+      },
 
-  clearWishlist: () => {
-    localStorage.removeItem('wishlist')
-    set({ items: [] })
-  }
-}))
+      toggleWishlist: (product) => {
+        const exists = get().items.find((item) => item.id === product.id);
+        if (exists) {
+          get().removeFromWishlist(product.id);
+        } else {
+          get().addToWishlist(product);
+        }
+      },
 
-export default useWishlistStore
+      isInWishlist: (productId) => {
+        return get().items.some((item) => item.id === productId);
+      },
+
+      clearWishlist: () => {
+        set({ items: [] });
+      }
+    }),
+    { name: 'wishlist-storage' }
+  )
+);
+
+export default useWishlistStore;

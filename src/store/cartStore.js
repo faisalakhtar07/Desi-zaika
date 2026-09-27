@@ -1,77 +1,56 @@
-import { create } from 'zustand'
-import { cartAPI } from '../services/api'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useCartStore = create((set, get) => ({
-  items: [],
-  subtotal: 0,
-  loading: false,
-  error: null,
+const useCartStore = create(
+  persist(
+    (set, get) => ({
+      items: [],
 
-  getCart: async () => {
-    set({ loading: true })
-    try {
-      const response = await cartAPI.getCart()
-      set({
-        items: response.data.cart.items,
-        subtotal: response.data.cart.subtotal,
-        loading: false
-      })
-      return response.data.cart
-    } catch (error) {
-      set({ error: error.message, loading: false })
-      throw error
-    }
-  },
+      addToCart: (product, quantity = 1) => {
+        const existing = get().items.find((item) => item.id === product.id);
+        if (existing) {
+          set({
+            items: get().items.map((item) =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
+            )
+          });
+        } else {
+          set({ items: [...get().items, { ...product, quantity }] });
+        }
+      },
 
-  addItem: async (productId, quantity = 1) => {
-    set({ loading: true })
-    try {
-      await cartAPI.addItem({ productId, quantity })
-      await get().getCart()
-      return true
-    } catch (error) {
-      set({ error: error.response?.data?.message || error.message, loading: false })
-      throw error
-    }
-  },
+      removeFromCart: (productId) => {
+        set({ items: get().items.filter((item) => item.id !== productId) });
+      },
 
-  removeItem: async (itemId) => {
-    set({ loading: true })
-    try {
-      await cartAPI.removeItem(itemId)
-      await get().getCart()
-      return true
-    } catch (error) {
-      set({ error: error.message, loading: false })
-      throw error
-    }
-  },
+      updateQuantity: (productId, quantity) => {
+        if (quantity <= 0) {
+          get().removeFromCart(productId);
+        } else {
+          set({
+            items: get().items.map((item) =>
+              item.id === productId ? { ...item, quantity } : item
+            )
+          });
+        }
+      },
 
-  updateItem: async (itemId, quantity) => {
-    try {
-      await cartAPI.updateItem(itemId, { quantity })
-      await get().getCart()
-      return true
-    } catch (error) {
-      set({ error: error.message })
-      throw error
-    }
-  },
+      clearCart: () => {
+        set({ items: [] });
+      },
 
-  clearCart: async () => {
-    try {
-      await cartAPI.clearCart()
-      set({ items: [], subtotal: 0 })
-      return true
-    } catch (error) {
-      set({ error: error.message })
-      throw error
-    }
-  },
+      getTotal: () => {
+        return get().items.reduce((total, item) => total + item.sellingPrice * item.quantity, 0);
+      },
 
-  getItemCount: () => {
-    return get().items.length
-  }
-}))
+      getItemCount: () => {
+        return get().items.reduce((count, item) => count + item.quantity, 0);
+      }
+    }),
+    { name: 'cart-storage' }
+  )
+);
 
-export default useCartStore
+export default useCartStore;

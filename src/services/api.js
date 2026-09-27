@@ -1,81 +1,80 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const apiClient = axios.create({
+const instance = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  withCredentials: true
-})
+  timeout: 10000
+});
 
-// Add token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+// Add token to every request
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
-})
+  return config;
+});
 
-// Handle response errors
-apiClient.interceptors.response.use(
+// Handle 401 errors
+instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 export const authAPI = {
-  signup: (data) => apiClient.post('/auth/signup', data),
-  login: (data) => apiClient.post('/auth/login', data),
-  logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-  },
-  getProfile: () => apiClient.get('/auth/profile'),
-  changePassword: (data) => apiClient.post('/auth/change-password', data),
-  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
-  resetPassword: (data) => apiClient.post('/auth/reset-password', data)
-}
+  signup: (data) => instance.post('/auth/signup', data),
+  login: (email, password) => instance.post('/auth/login', { email, password }),
+  getProfile: () => instance.get('/auth/profile'),
+  changePassword: (data) => instance.put('/auth/change-password', data)
+};
 
 export const productAPI = {
-  getAll: (params) => apiClient.get('/products', { params }),
-  getById: (id) => apiClient.get(`/products/${id}`),
-  getFeatured: () => apiClient.get('/products/featured'),
-  getBestSellers: () => apiClient.get('/products/bestsellers'),
-  getNewArrivals: () => apiClient.get('/products/new'),
-  search: (query) => apiClient.get('/products/search', { params: { q: query } })
-}
+  getProducts: (params) => instance.get('/products', { params }),
+  getProductById: (id) => instance.get(`/products/${id}`),
+  getFeatured: () => instance.get('/products/featured'),
+  getBestSellers: () => instance.get('/products/bestsellers'),
+  getNewArrivals: () => instance.get('/products/new-arrivals'),
+  search: (query) => instance.get(`/products/search/${query}`)
+};
 
 export const cartAPI = {
-  getCart: () => apiClient.get('/cart'),
-  addItem: (data) => apiClient.post('/cart/add', data),
-  updateItem: (id, data) => apiClient.put(`/cart/item/${id}`, data),
-  removeItem: (id) => apiClient.delete(`/cart/item/${id}`),
-  clearCart: () => apiClient.delete('/cart'),
-  getCount: () => apiClient.get('/cart/count')
-}
+  getCart: () => instance.get('/cart'),
+  addToCart: (productId, quantity) => instance.post('/cart/add', { productId, quantity }),
+  removeFromCart: (productId) => instance.delete(`/cart/item/${productId}`),
+  updateCartItem: (productId, quantity) => instance.put(`/cart/item/${productId}`, { quantity }),
+  clearCart: () => instance.delete('/cart')
+};
 
 export const orderAPI = {
-  place: (data) => apiClient.post('/orders/place', data),
-  getAll: (params) => apiClient.get('/orders', { params }),
-  getById: (id) => apiClient.get(`/orders/${id}`),
-  track: (orderId) => apiClient.get(`/orders/track/${orderId}`),
-  cancel: (id, data) => apiClient.post(`/orders/${id}/cancel`, data)
-}
+  placeOrder: (data) => instance.post('/orders/place', data),
+  getOrders: () => instance.get('/orders'),
+  getOrderById: (orderId) => instance.get(`/orders/${orderId}`),
+  trackOrder: (orderId) => instance.get(`/orders/track/${orderId}`),
+  cancelOrder: (orderId) => instance.post(`/orders/${orderId}/cancel`)
+};
 
-export const userAPI = {
-  getAddresses: () => apiClient.get('/users/addresses'),
-  addAddress: (data) => apiClient.post('/users/addresses', data),
-  updateAddress: (id, data) => apiClient.put(`/users/addresses/${id}`, data),
-  deleteAddress: (id) => apiClient.delete(`/users/addresses/${id}`)
-}
+export const wishlistAPI = {
+  getWishlist: () => instance.get('/wishlist'),
+  addToWishlist: (productId) => instance.post('/wishlist/add', { productId }),
+  removeFromWishlist: (productId) => instance.delete(`/wishlist/${productId}`)
+};
 
-export default apiClient
+export const reviewAPI = {
+  getReviews: (productId) => instance.get(`/reviews/product/${productId}`),
+  createReview: (data) => instance.post('/reviews', data),
+  updateReview: (id, data) => instance.put(`/reviews/${id}`, data),
+  deleteReview: (id) => instance.delete(`/reviews/${id}`)
+};
+
+export const couponAPI = {
+  validateCoupon: (code, orderAmount) => instance.post('/coupons/validate', { code, orderAmount })
+};
+
+export default instance;

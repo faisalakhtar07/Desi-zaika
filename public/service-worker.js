@@ -1,36 +1,34 @@
-// service-worker.js - Place in public/ folder
+const CACHE_NAME = 'desi-zaika-v1';
+const RUNTIME_CACHE = 'desi-zaika-runtime';
 
-const CACHE_NAME = 'desi-zaika-v2';
-const urlsToCache = [
+const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/logo-192.png',
-  '/badge-72.png'
+  '/manifest.json',
+  '/favicon.ico'
 ];
 
-// Install Service Worker
-self.addEventListener('install', event => {
-  console.log('[Service Worker] Installing...');
+// Install event - cache static assets
+self.addEventListener('install', (event) => {
+  console.log('🔧 Service Worker installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[Service Worker] Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(err => console.log('[Service Worker] Cache error:', err))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('📦 Caching static assets');
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
   self.skipWaiting();
 });
 
-// Activate Service Worker
-self.addEventListener('activate', event => {
-  console.log('[Service Worker] Activating...');
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('✅ Service Worker activated');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+            console.log(`🗑️ Deleting old cache: ${cacheName}`);
             return caches.delete(cacheName);
           }
         })
@@ -40,101 +38,152 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event - Network first, then cache
-self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Don't cache non-GET requests
+  if (request.method !== 'GET') {
     return;
   }
 
+  // Skip API calls that need fresh data
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache successful API responses
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Return cached response if offline
+          return caches.match(request).then((cachedResponse) => {
+            return (
+              cachedResponse ||
+              new Response(JSON.stringify({ offline: true }), {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: new Headers({ 'Content-Type': 'application/json' })
+              })
+            );
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache first for static assets
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Cache successful responses
-        if (response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request)
+        .then((response) => {
+          // Cache successful responses
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Offline fallback
+          return new Response('Offline - Page not cached', {
+            status: 503,
+            statusText: 'Service Unavailable'
           });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Return cached version if fetch fails
-        return caches.match(event.request)
-          .then(response => {
-            return response || new Response('Offline - Page not available');
-          });
-      })
+        });
+    })
   );
 });
 
-// ✅ HANDLE PUSH NOTIFICATIONS
-self.addEventListener('push', event => {
-  console.log('[Service Worker] Push received:', event);
-
-  if (!event.data) {
-    console.log('[Service Worker] Push event but no data');
-    return;
+// Handle messages from client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 
-  let notificationData = {};
-  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then((cacheNames) => {
+      Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    });
+  }
+});
+
+// Background sync for offline orders
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-orders') {
+    event.waitUntil(syncOrders());
+  }
+});
+
+async function syncOrders() {
   try {
-    notificationData = event.data.json();
-  } catch (e) {
-    notificationData = {
-      title: 'Desi Zaika',
-      body: event.data.text()
-    };
-  }
+    const cache = await caches.open(RUNTIME_CACHE);
+    const requests = await cache.keys();
+    
+    const orderRequests = requests.filter((req) =>
+      req.url.includes('/api/orders/place')
+    );
 
+    for (const req of orderRequests) {
+      try {
+        await fetch(req.clone());
+      } catch (error) {
+        console.error('Failed to sync order:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Sync error:', error);
+  }
+}
+
+// Push notifications
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() || {};
+  
   const options = {
-    body: notificationData.body || 'New notification from Desi Zaika',
-    icon: notificationData.icon || '/logo-192.png',
-    badge: notificationData.badge || '/badge-72.png',
-    tag: notificationData.tag || 'desi-zaika',
-    requireInteraction: notificationData.requireInteraction || false,
-    vibrate: notificationData.vibrate || [100, 50, 100],
-    data: notificationData.data || {}
+    body: data.message || 'You have a new notification',
+    icon: '/icon-192x192.png',
+    badge: '/badge-72x72.png',
+    tag: data.tag || 'notification',
+    requireInteraction: data.requireInteraction || false,
+    data: {
+      url: data.url || '/',
+      orderId: data.orderId
+    }
   };
 
   event.waitUntil(
-    self.registration.showNotification(
-      notificationData.title || 'Desi Zaika',
-      options
-    )
+    self.registration.showNotification(data.title || 'Desi Zaika', options)
   );
 });
 
-// ✅ HANDLE NOTIFICATION CLICK
-self.addEventListener('notificationclick', event => {
-  console.log('[Service Worker] Notification clicked:', event.notification.tag);
-
+// Notification click
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  // Open app when notification is clicked
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(clientList => {
-        // Check if app window already open
-        for (let i = 0; i < clientList.length; i++) {
-          const client = clientList[i];
-          if (client.url === '/' && 'focus' in client) {
-            return client.focus();
-          }
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      for (let client of clientList) {
+        if (client.url === event.notification.data.url && 'focus' in client) {
+          return client.focus();
         }
-        // If not open, open new window
-        if (clients.openWindow) {
-          return clients.openWindow('/');
-        }
-      })
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(event.notification.data.url);
+      }
+    })
   );
 });
-
-// ✅ HANDLE NOTIFICATION CLOSE
-self.addEventListener('notificationclose', event => {
-  console.log('[Service Worker] Notification closed:', event.notification.tag);
-});
-
-console.log('[Service Worker] Loaded successfully');

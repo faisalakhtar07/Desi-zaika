@@ -1,53 +1,71 @@
-import { create } from 'zustand'
-import { authAPI } from '../services/api'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import axios from 'axios';
 
-const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
-  loading: false,
-  error: null,
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  signup: async (data) => {
-    set({ loading: true, error: null })
-    try {
-      const response = await authAPI.signup(data)
-      const { token, user } = response.data
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      set({ user, token, loading: false })
-      return response.data
-    } catch (error) {
-      const message = error.response?.data?.message || 'Signup failed'
-      set({ error: message, loading: false })
-      throw error
+const useAuthStore = create(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      userId: null,
+      isLoading: false,
+      error: null,
+
+      signup: async (name, email, phone, password, confirmPassword) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await axios.post(`${API_URL}/auth/signup`, {
+            name,
+            email,
+            phone,
+            password,
+            confirmPassword
+          });
+
+          const { token, user } = response.data;
+          set({
+            token,
+            user,
+            userId: user.id,
+            isLoading: false
+          });
+          return true;
+        } catch (error) {
+          set({ error: error.response?.data?.message || 'Signup failed', isLoading: false });
+          return false;
+        }
+      },
+
+      login: async (email, password) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+          const { token, user } = response.data;
+
+          set({
+            token,
+            user,
+            userId: user.id,
+            isLoading: false
+          });
+          return true;
+        } catch (error) {
+          set({ error: error.response?.data?.message || 'Login failed', isLoading: false });
+          return false;
+        }
+      },
+
+      logout: () => {
+        set({ token: null, user: null, userId: null });
+      }
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({ token: state.token, user: state.user, userId: state.userId })
     }
-  },
+  )
+);
 
-  login: async (data) => {
-    set({ loading: true, error: null })
-    try {
-      const response = await authAPI.login(data)
-      const { token, user } = response.data
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      set({ user, token, loading: false })
-      return response.data
-    } catch (error) {
-      const message = error.response?.data?.message || 'Login failed'
-      set({ error: message, loading: false })
-      throw error
-    }
-  },
-
-  logout: () => {
-    authAPI.logout()
-    set({ user: null, token: null })
-  },
-
-  isAuthenticated: () => {
-    const state = useAuthStore.getState()
-    return !!state.token && !!state.user
-  }
-}))
-
-export default useAuthStore
+export default useAuthStore;
