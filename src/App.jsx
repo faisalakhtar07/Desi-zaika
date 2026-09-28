@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
-import { initializeSocket, joinAsUser } from './utils/socketClient';
-
-// Pages
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import io from 'socket.io-client';
+import useAuthStore from './store/authStore';
+import Layout from './components/Layout';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
@@ -14,45 +13,64 @@ import Wishlist from './pages/Wishlist';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
-import Layout from './components/Layout';
 
-export default function App() {
-  const { token, userId } = useAuthStore();
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+function App() {
+  const token = useAuthStore((state) => state.token);
+  const userId = useAuthStore((state) => state.userId);
 
   useEffect(() => {
-    // Register Service Worker
+    // Register service worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(() => console.log('✅ Service Worker registered'))
-        .catch((err) => console.error('❌ SW failed:', err));
+      navigator.serviceWorker.register('/service-worker.js').catch(err =>
+        console.log('Service Worker registration failed:', err)
+      );
     }
 
-    // Initialize Socket.IO if logged in
+    // Socket.IO connection
     if (token && userId) {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      initializeSocket(socketUrl);
-      joinAsUser(userId);
-      console.log('🔌 Socket connected for user:', userId);
+      const socket = io(API_URL.replace('/api', ''), {
+        auth: { token },
+        reconnection: true
+      });
+
+      socket.on('connect', () => {
+        console.log('Connected to socket');
+        socket.emit('joinAsUser', { userId });
+      });
+
+      return () => {
+        socket.disconnect();
+      };
     }
   }, [token, userId]);
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-
         <Route element={<Layout />}>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={token ? <Checkout /> : <Navigate to="/login" />} />
-          <Route path="/orders" element={token ? <Orders /> : <Navigate to="/login" />} />
-          <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          {/* Protected Routes */}
+          {token && (
+            <>
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/profile" element={<Profile />} />
+            </>
+          )}
         </Route>
       </Routes>
     </Router>
   );
 }
+
+export default App;
